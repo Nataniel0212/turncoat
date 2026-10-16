@@ -1,0 +1,41 @@
+name: evaluation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sieve/evaluation/**'
+      - 'sieve/attacker.py'
+      - 'sieve/scenarios.py'
+      - 'evaluate_defenses.py'
+      - 'scripts/audit_defense_results.py'
+      - 'requirements-eval.txt'
+      - 'tests/test_evaluation*'
+      - 'results/defense-2026-10-16/**'
+      - '.github/workflows/evaluation.yml'
+  pull_request:
+    paths:
+      - 'sieve/evaluation/**'
+      - 'sieve/attacker.py'
+      - 'sieve/scenarios.py'
+      - 'evaluate_defenses.py'
+      - 'scripts/audit_defense_results.py'
+      - 'requirements-eval.txt'
+      - 'tests/test_evaluation*'
+      - 'results/defense-2026-10-16/**'
+      - '.github/workflows/evaluation.yml'
+permissions:
+  contents: read
+jobs:
+  offline-evaluation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-eval.txt
+      - name: Gate, shared budget, and real AgentDojo runtime (offline)
+        run: pytest -q tests/test_evaluation.py tests/test_evaluation_dojo.py
+      - name: Recompute published verdicts and costs (no API key or model calls)
+        run: python scripts/audit_defense_results.py results/defense-2026-10-16

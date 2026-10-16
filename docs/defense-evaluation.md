@@ -91,6 +91,7 @@ python evaluate_defenses.py all --out runs/defense-evaluation
 python evaluate_defenses.py all --out runs/defense-pilot --pilot --live --budget-usd 0.5
 python evaluate_defenses.py all --out runs/defense-evaluation --live --budget-usd 9.5
 python evaluate_defenses.py report --out runs/defense-evaluation --export results/defense-evaluation
+python scripts/audit_defense_results.py results/defense-evaluation --save
 ```
 
 Set `NEBIUS_API_KEY` in the process, or pass `--env-file /local/path/.env`. No keys
@@ -102,3 +103,8 @@ resuming. Changing the protocol/source requires a new output directory.
 References: [AgentDojo](https://github.com/ethz-spylab/agentdojo),
 [attack interface](https://agentdojo.spylab.ai/concepts/attacks/),
 [Nebius Ultra configuration and prices](https://github.com/nebius/token-factory-cookbook/blob/main/models/nemotron/nemotron3-ultra-550b-a55b.md).
+
+The published [Nebius Nemotron price table](https://nebius.com/services/token-factory/models/nvidia-nemotron-models-inference)
+was checked on 2026-10-16: Lightning $0.06/$0.24 and Ultra $1/$3 per million
+input/output tokens. These rates and actual API token counts determine costs;
+they are not invoice or credit-balance measurements.

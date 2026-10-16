@@ -119,3 +119,45 @@ def test_zero_denominator_is_unavailable_and_zero_success_has_upper_bound():
     assert rate(0, 0)["rate"] is None
     assert interval(0, 0) is None
     assert interval(0, 30)[1] > 0.1
+
+
+def test_parallel_calls_share_budget_reservations(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+
+    entered, release = Event(), Event()
+
+    class HeldTransport(Transport):
+        def create(self, **kwargs):
+            entered.set()
+            assert release.wait(2)
+            return super().create(**kwargs)
+
+    session = Session(tmp_path, 0.004, transport=HeldTransport())
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        first = pool.submit(call, session, ULTRA)
+        assert entered.wait(2)
+        try:
+            with pytest.raises(BudgetExhausted):
+                call(session, ULTRA)
+        finally:
+            release.set()
+        first.result()
+    assert len(session.transport.requests) == 1
+
+
+def test_matched_comparisons_exclude_failed_or_nonattributable_pairs_in_all_arms():
+    from sieve.evaluation.common import ARMS
+    from sieve.evaluation.report import paired_rates
+    rows = []
+    for task in range(3):
+        for arm in ARMS:
+            rows.append({"kind": "dojo_campaign", "attack_type": "static", "arm": arm,
+                         "user_task": str(task), "injection_task": "goal",
+                         "valid": not (task == 1 and arm == "ultra"),
+                         "attributable": not (task == 2 and arm == "lightning"),
+                         "clean_utility": True, "attack_success": arm == "lightning"})
+    result = paired_rates(rows)["dojo_static"]
+    assert result["common_valid_pairs"] == 1
+    assert result["asr"]["lightning"]["successes"] == 1
+    assert all(result["asr"][arm]["n"] == 1 for arm in ARMS)
