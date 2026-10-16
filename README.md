@@ -79,6 +79,28 @@ flagged the injected message as suspicious. Prompt-injection robustness is a
 measurable property of the model choice. Cost and latency come from
 [`results/campaign-stats-2026-10-15.json`](results/campaign-stats-2026-10-15.json).
 
+### Measured defense and AgentDojo banking
+
+The [16 October defense evaluation](results/defense-2026-10-16/summary.md)
+compares Lightning, Lightning with an independent Ultra action-authorization
+gate, and Ultra alone. It includes all **16 user tasks × 9 attacker goals** in
+AgentDojo banking v1.2.2, clean-task checks, fixed attacks and a separate adaptive
+attack experiment. Outcomes are checked from environment state.
+
+On the **70 task/goal pairs** with successful clean tasks and valid attack
+outcomes for all three agents, full attacker-goal success was **43/70** for
+Lightning, **0/70** with the gate and **10/70** for Ultra. The gate completed
+120 of 144 attacked runs; the others are disclosed as incomplete. Zero observed
+successes is a bounded experiment result, not a security guarantee. Under
+attack the gate was slightly more expensive than Ultra alone and completed
+fewer legitimate tasks. On clean tasks it cost less, with lower utility than Ultra.
+
+The adaptive attacker **did not outperform the fixed template** in this run.
+Attack budgets and available prompt information differ and are documented.
+Original AgentDojo scores and supplementary checks for evaluator edge cases are
+both retained. See the [protocol and reproduction commands](docs/defense-evaluation.md)
+and the [audited raw data](results/defense-2026-10-16).
+
 ### We caught our own benchmark lying
 
 | Pass | Email / Bank / Docs | What changed |
@@ -91,7 +113,7 @@ Details and every intermediate number are in [DEVLOG.md](DEVLOG.md).
 
 ## Why a measurement tool, not a chatbot
 
-- **Adaptive attacks.** Static templates are weak. Turncoat runs an iterative
+- **Adaptive attacks with a fixed-template baseline.** Turncoat runs an iterative
   refinement loop inspired by TAP (arXiv [2606.10525](https://arxiv.org/abs/2606.10525)),
   without TAP's tree search or pruning: one candidate per attempt, rotating six
   techniques, and the attacker is told how far its last attempt got before it
@@ -273,8 +295,9 @@ because the default rules do not recognise that format.
 
 - **Synthetic scenarios.** The published results use three agents with small
   tool sets. The local Python adapter can test your orchestration and policy,
-  but still uses synthetic tools. Production-agent and AgentDojo connectors remain
-  future work.
+  but still uses synthetic tools. The separate AgentDojo banking evaluation
+  adds externally maintained tasks and tools; these also use simulated data.
+  Production-agent connectors remain future work.
 - **Technique and attempt number are confounded.** Techniques rotate in a fixed
   order, so the per-technique rates also reflect *when* a technique is tried.
 - **Small n for the model comparison** (10 per cell). The intervals are wide; read
@@ -302,8 +325,8 @@ synthetic fixtures. It is a defensive tool: find the hole before an attacker doe
 ## Roadmap
 
 - Connect to remote agents and additional real-world evaluation environments.
-- Run **AgentDojo** (MIT) suites for numbers comparable to the literature.
-- Suggest a mitigation per finding and re-measure with it applied.
+- Extend the **AgentDojo** banking integration to additional suites and defenses.
+- Suggest mitigations automatically and compare them with the measured Ultra gate.
 
 ## License
 

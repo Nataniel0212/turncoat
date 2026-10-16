@@ -1,0 +1,15 @@
+{
+  "unit": "USD per million tokens",
+  "checked_on": "2026-10-16",
+  "source": "https://nebius.com/services/token-factory/models/nvidia-nemotron-models-inference",
+  "rates": {
+    "nvidia/Nemotron-3-Ultra-550b-a55b": [
+      1.0,
+      3.0
+    ],
+    "nvidia/Nemotron-3_5-Lightning": [
+      0.06,
+      0.24
+    ]
+  }
+}

@@ -18,3 +18,9 @@ examples
 /benchmark.*
 /compare.*
 /results/raw
+# Local research artifacts and optional benchmark dependencies.
+/results/defense-2026-10-16
+/evaluate_defenses.py
+/requirements-eval.txt
+/sieve/evaluation
+/scripts/audit_defense_results.py

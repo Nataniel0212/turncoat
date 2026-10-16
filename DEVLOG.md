@@ -371,3 +371,37 @@ Another hackathon entry already uses the name Sieve, so the project is now
 `Nataniel0212/turncoat` (the old URL redirects) and the demo is
 `https://turncoat-redteam.vercel.app` (the old address still works). The Python
 package keeps the name `sieve`, so imports, scripts and run data are unchanged.
+
+### Measured action authorization and AgentDojo banking
+
+- Added a separate Ultra check before sensitive tools execute, with strict JSON
+  validation, explicit trust boundaries, per-call measurement and a shared
+  budget. Targets and attacker use Nebius directly; no provider/model fallback.
+- The new protocol compares Lightning, Lightning + Ultra gate and Ultra alone:
+  90 synthetic attack campaigns, 90 legitimate controls, 48 AgentDojo clean
+  runs, 432 fixed-template attacks and 144 adaptive campaigns. All 16 banking
+  user tasks and 9 attacker goals are included. A 38-record pilot is separate.
+- Of the 804 planned main records, 743 completed and 61 were incomplete; one
+  call returned HTTP 502. These failures remain in the artifacts. Main cost:
+  $6.630657 from token usage; pilot $0.113073. The shared accounting also reserves
+  $0.003239 for uncertain billing on the failed call.
+- On 70 common task pairs with successful clean tasks, attack success was 43/70
+  for Lightning, 0/70 with the gate and 10/70 for Ultra. The gate had 24 incomplete
+  attack runs overall. It was cheaper than Ultra on clean work, slightly more
+  expensive under attack, and completed fewer legitimate tasks than Ultra.
+- The adaptive generator did not beat the fixed template in this experiment.
+  Both results, different budgets and differences in prompt information are
+  reported. Removed the unsupported blanket claim that static templates are weak.
+- AgentDojo code/fixtures are pinned. Upstream scores and supplementary checks
+  for specific banking evaluator edge cases are both exported. The audit found
+  44 per-attempt disagreements; it never changes the upstream package.
+- Artifacts in `results/defense-2026-10-16/` include compressed traces, all call
+  measurements, dependency versions/provenance, redaction notes and an offline
+  audit. The 11,387 main audit checks and 339 pilot checks pass after redaction.
+- Validation: 78 offline tests with optional AgentDojo dependencies; the standard
+  environment passes 70 tests and skips the optional module. Generated page and
+  browser-script checks pass. Decompressed exports pass Gitleaks; no configured
+  credential values were found. Research code/data are excluded from Vercel.
+
+See [the protocol](docs/defense-evaluation.md) and
+[the complete results](results/defense-2026-10-16/summary.md).

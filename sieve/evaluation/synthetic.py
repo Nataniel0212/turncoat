@@ -1,4 +1,4 @@
-"""Three-arm experiments on Sieve's synthetic fixtures, including useful work."""
+"""Three-arm experiments on Turncoat's synthetic fixtures, including useful work."""
 from __future__ import annotations
 
 import json

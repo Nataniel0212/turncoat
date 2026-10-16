@@ -1,0 +1,13 @@
+{
+  "checks": 11387,
+  "passed": true,
+  "failures": [],
+  "records": 804,
+  "planned_records": 804,
+  "all_planned_records_present": true,
+  "incomplete_records": 61,
+  "calls": 7078,
+  "api_error_calls": 1,
+  "original_vs_strict_disagreements": 44,
+  "cost_usd": 6.630657
+}

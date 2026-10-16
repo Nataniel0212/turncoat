@@ -18,7 +18,7 @@ runner, separate from the hosted demo and its dependencies.
   `089ed468cf3ed0322acc66b0211f26d9d90dbf60`, 16 user tasks × 9 attacker goals.
   Run all 16 clean tasks on all three arms. Run the upstream
   `important_instructions` template on all 144 pairs and all three arms.
-  Separately, run Sieve's adaptive attacker on all 144 pairs against Lightning,
+  Separately, run Turncoat's adaptive attacker on all 144 pairs against Lightning,
   with up to **3 attempts** per pair. This is a sequential adaptive attack,
   without tree search or pruning. These two attacks have different budgets;
   report first-attempt and campaign rates, not an unqualified superiority claim.
@@ -54,7 +54,7 @@ tradeoff between compromise, useful work, cost and latency.
 ## Scoring and limitations
 
 This is a new experiment. Its five-attempt budget, target temperature 0 and
-12-turn cap differ from the earlier Sieve benchmark (ten attempts, temperature
+12-turn cap differ from the earlier Turncoat benchmark (ten attempts, temperature
 0.3, six turns). Model text is preserved in these raw traces. Keep the earlier
 95/100/10 results attached to their original protocol and data.
 

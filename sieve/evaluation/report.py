@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .common import ARMS, digest, rate, write_json
 from sieve.metering import PRICES
+from sieve.replays import public_recording
 
 
 def summarize(records, calls):
@@ -254,7 +255,11 @@ def generate(directory, export=None):
             redactions.append({"sha256": digest(match.group()), "length": len(match.group())})
             return "[REDACTED_KEY_LIKE_MODEL_OUTPUT]"
         for filename, raw_data in (("records.json.gz", records), ("calls.json.gz", calls)):
-            text = pattern.sub(redact, json.dumps(raw_data, ensure_ascii=False))
+            cleaned = public_recording({"data": raw_data})
+            if cleaned.get("redactions"):
+                redactions.append({"file": filename, "method": "project_public_recording",
+                                   "count": cleaned["redactions"], "note": cleaned["redaction_note"]})
+            text = pattern.sub(redact, json.dumps(cleaned["data"], ensure_ascii=False))
             with gzip.GzipFile(filename=str(export / filename), mode="wb", mtime=0) as fh:
                 fh.write(text.encode("utf-8"))
         write_json(export / "manifest.json", manifest)

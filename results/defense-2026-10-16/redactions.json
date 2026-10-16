@@ -1,0 +1,14 @@
+[
+  {
+    "file": "records.json.gz",
+    "method": "project_public_recording",
+    "count": 263,
+    "note": "Credential-shaped strings invented in the synthetic attack text are redacted. Timings, usage and verdicts are unchanged."
+  },
+  {
+    "file": "calls.json.gz",
+    "method": "project_public_recording",
+    "count": 74,
+    "note": "Credential-shaped strings invented in the synthetic attack text are redacted. Timings, usage and verdicts are unchanged."
+  }
+]

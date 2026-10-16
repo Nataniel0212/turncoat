@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-16",
+  "gitleaks_version": "8.30.1",
+  "scope": "Decompressed main/pilot traces and call records; configured local credential values also checked against new source and exported data.",
+  "gitleaks_findings_after_redaction": 0,
+  "known_configured_credential_matches": 0,
+  "redacted_synthetic_text_occurrences": 337,
+  "note": "Masking applies to credential-shaped text invented by models; published verdicts and costs were recomputed successfully afterwards."
+}
