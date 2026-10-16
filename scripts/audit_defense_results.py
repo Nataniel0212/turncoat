@@ -37,6 +37,8 @@ def load(directory):
 
 def audit(directory):
     manifest, records, calls = load(Path(directory))
+    price_path = Path(directory) / "pricing.json"
+    prices = json.loads(price_path.read_text(encoding="utf-8"))["rates"] if price_path.exists() else None
     failures, checks = [], 0
 
     def check(condition, label):
@@ -51,7 +53,10 @@ def audit(directory):
     check(all(c["phase"] != "gate" or c["enable_thinking"] for c in calls), "gate reasoning setting")
     for c in calls:
         if c["status"] == "ok":
-            check(math.isclose(c["cost_usd"], cost_usd(c["model"], c["prompt_tokens"], c["completion_tokens"]),
+            expected_cost = ((c["prompt_tokens"] * prices[c["model"]][0] +
+                              c["completion_tokens"] * prices[c["model"]][1]) / 1e6) if prices else cost_usd(
+                                  c["model"], c["prompt_tokens"], c["completion_tokens"])
+            check(math.isclose(c["cost_usd"], expected_cost,
                                abs_tol=1e-8), "per-call cost " + c["job_id"])
     s = suite()
     disagreements = 0
@@ -91,6 +96,9 @@ def audit(directory):
                 len(manifest["user_tasks"]) * len(ARMS) +
                 len(manifest["user_tasks"]) * len(manifest["injection_tasks"]) *
                 (len(ARMS) + len(manifest["adaptive_agentdojo_arms"])))
+    check(len(records) == expected, "all planned records present")
+    job_ids = {r["job_id"] for r in records}
+    check(all(c["job_id"] in job_ids for c in calls), "all calls belong to recorded jobs")
     return {"checks": checks, "passed": not failures, "failures": failures,
             "records": len(records), "planned_records": expected,
             "all_planned_records_present": len(records) == expected,

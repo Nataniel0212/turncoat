@@ -161,3 +161,19 @@ def test_matched_comparisons_exclude_failed_or_nonattributable_pairs_in_all_arms
     assert result["common_valid_pairs"] == 1
     assert result["asr"]["lightning"]["successes"] == 1
     assert all(result["asr"][arm]["n"] == 1 for arm in ARMS)
+
+
+def test_incomplete_runs_remain_in_useful_work_denominator():
+    from sieve.evaluation.report import summarize
+    rows = [{"job_id": str(i), "kind": "dojo_campaign", "attack_type": "static",
+             "arm": "lightning_gate", "complete": i == 0, "valid": i == 0,
+             "attributable": i == 0, "conditional_valid": i == 0,
+             "attack_success": False, "upstream_attack_success": False,
+             "goal_already_satisfied": False,
+             "attempts": [{"refused": False, "strict_attack_success": False,
+                           "utility": True, "complete": i == 0, "gate_decisions": []}]}
+            for i in range(2)]
+    result = summarize(rows, [])[0]
+    assert result["campaign_asr"]["n"] == 1
+    assert result["final_attempt_utility_including_failures"]["successes"] == 1
+    assert result["final_attempt_utility_including_failures"]["n"] == 2

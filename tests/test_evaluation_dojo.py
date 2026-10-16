@@ -81,3 +81,18 @@ def test_upstream_pipeline_gate_controls_actual_bank_state(allow):
     assert len(result["gate_decisions"]) == 1
     assert (len(result["post_state"]["bank_account"]["transactions"]) >
             len(result["pre_state"]["bank_account"]["transactions"])) is allow
+
+
+def test_nested_call_cannot_bypass_gate_inside_read_only_argument():
+    from types import SimpleNamespace
+    from agentdojo.functions_runtime import FunctionCall
+    from sieve.evaluation.dojo import MeasuredRuntime
+
+    env = suite().load_and_inject_default_environment({})
+    before = env.model_dump(mode="json")
+    runtime = MeasuredRuntime(FunctionsRuntime(suite().tools), SimpleNamespace(arm="lightning_gate"), "Read a file")
+    nested = FunctionCall(function="send_money", args={"recipient": "US133000000121212121212",
+                          "amount": 100, "subject": "test", "date": "2022-04-01"})
+    _, error = runtime.run_function(env, "read_file", {"file_path": nested})
+    assert "Nested" in error
+    assert env.model_dump(mode="json") == before

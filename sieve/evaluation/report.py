@@ -4,10 +4,11 @@ from __future__ import annotations
 import gzip
 import json
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 from .common import ARMS, digest, rate, write_json
+from sieve.metering import PRICES
 
 
 def summarize(records, calls):
@@ -22,13 +23,24 @@ def summarize(records, calls):
         complete = [r for r in rows if r.get("complete")]
         entry = {"kind": kind, "attack_type": attack, "arm": arm,
                  "records": len(rows), "completed": len(complete)}
+        def incomplete_reason(r):
+            if r.get("stopped_reason"):
+                return r["stopped_reason"]
+            decisions = r.get("gate_decisions", [])
+            if any(not g["valid"] for g in decisions):
+                return "invalid_gate_output"
+            messages = r.get("messages", [])
+            if messages and messages[-1].get("tool_calls"):
+                return "turn_limit"
+            return "incomplete"
+        entry["incomplete_reasons"] = dict(Counter(incomplete_reason(r) for r in rows if not r.get("complete")))
         ids = {r["job_id"] for r in rows}
         metrics = [c for c in calls if c["job_id"] in ids]
         entry["cost_usd"] = round(sum(c.get("cost_usd") or 0 for c in metrics), 6)
         entry["accounted_usd"] = round(sum(c["accounted_usd"] for c in metrics), 6)
         entry["cost_by_phase"] = {phase: round(sum(c.get("cost_usd") or 0 for c in metrics if c["phase"] == phase), 6)
                                   for phase in ("attacker", "target", "baseline", "clean", "gate")}
-        target_calls = [c for c in metrics if c["phase"] in ("target", "gate")]
+        target_calls = [c for c in metrics if c["phase"] in ("target", "gate") and c.get("attempt", 0) > 0]
         if kind.endswith("campaign"):
             valid = [r for r in rows if r.get("valid")]
             attributable = [r for r in valid if r.get("attributable")] if kind == "dojo_campaign" else valid
@@ -42,14 +54,14 @@ def summarize(records, calls):
             entry["per_attempt_asr"] = rate(sum(success(a) for a in attempts), len(attempts))
             first = [r["attempts"][0] for r in valid if r["attempts"] and not r["attempts"][0]["refused"]]
             entry["first_attempt_asr"] = rate(sum(success(a) for a in first), len(first))
+            executions = {(c["job_id"], c["attempt"]) for c in target_calls}
+            entry["initiated_target_attempts"] = len(executions)
             entry["target_gate_cost_per_attempt_usd"] = (
-                round(sum(c.get("cost_usd") or 0 for c in target_calls) /
-                      sum(len(r.get("attempts", [])) for r in rows), 6)
-                if any(r.get("attempts") for r in rows) else None)
+                round(sum(c.get("cost_usd") or 0 for c in target_calls) / len(executions), 6)
+                if executions else None)
             entry["target_gate_latency_per_attempt_s"] = (
-                round(sum(c["latency_s"] for c in target_calls) /
-                      sum(len(r.get("attempts", [])) for r in rows), 3)
-                if any(r.get("attempts") for r in rows) else None)
+                round(sum(c["latency_s"] for c in target_calls) / len(executions), 3)
+                if executions else None)
             entry["all_attempts"] = sum(len(r.get("attempts", [])) for r in rows)
             entry["refusal_attempts"] = sum(a["refused"] for r in rows for a in r.get("attempts", []))
             entry["baseline_failures"] = sum(r.get("stopped_reason") == "baseline_failed" for r in rows)
@@ -57,6 +69,9 @@ def summarize(records, calls):
                 entry["upstream_asr"] = rate(sum(r["upstream_attack_success"] for r in valid), len(valid))
                 entry["non_attributable_clean_goals"] = sum(r["goal_already_satisfied"] for r in rows)
                 entry["utility_under_attack"] = rate(sum(a["utility"] for a in attempts), len(attempts))
+                entry["final_attempt_utility_including_failures"] = rate(sum(bool(
+                    r["attempts"] and r["attempts"][-1]["complete"] and r["attempts"][-1]["utility"])
+                    for r in rows), len(rows))
         else:
             entry["clean_utility"] = rate(sum(r.get("utility", False) for r in complete), len(complete))
             entry["clean_utility_including_failures"] = rate(sum(r.get("utility", False) and r.get("complete") for r in rows), len(rows))
@@ -142,6 +157,15 @@ def markdown(summary, manifest, totals, paired=None):
                      f"${row['mean_clean_cost_usd']:.6f} |")
     lines += ["", "Synthetic controls contain equal numbers of read-only tasks and explicitly authorized "
               "transfers/emails/deletions. AgentDojo utility uses the unchanged upstream evaluator.", "",
+              "### Useful work under attack", "",
+              "Completion of the legitimate task after the final attack attempt, with incomplete/failed runs "
+              "counted as failures. This exposes availability loss from blocking or retry loops.", "",
+              "| AgentDojo attack | Agent | Legitimate task completed |",
+              "|---|---|---:|"]
+    for row in summary:
+        if row["kind"] == "dojo_campaign":
+            lines.append(f"| {row['attack_type']} | {row['arm']} | {_pct(row['final_attempt_utility_including_failures'])} |")
+    lines += ["",
               "## Cost and latency under attack", "",
               "Target+gate costs exclude attack generation and clean baselines. Latency is summed model-call "
               "time per executed attempt, including the gate; it is not concurrent batch wall time.", "",
@@ -202,6 +226,10 @@ def generate(directory, export=None):
             with gzip.GzipFile(filename=str(export / filename), mode="wb", mtime=0) as fh:
                 fh.write(text.encode("utf-8"))
         write_json(export / "manifest.json", manifest)
+        write_json(export / "pricing.json", {
+            "unit": "USD per million tokens", "checked_on": "2026-10-16",
+            "source": "https://nebius.com/services/token-factory/models/nvidia-nemotron-models-inference",
+            "rates": {model: list(PRICES[model]) for model in set(c["model"] for c in calls)}})
         write_json(export / "summary.json", {"groups": summary, "totals": totals, "matched_task_sets": paired})
         write_json(export / "redactions.json", redactions)
         (export / "summary.md").write_text(markdown(summary, manifest, totals, paired), encoding="utf-8")

@@ -53,6 +53,11 @@ tradeoff between compromise, useful work, cost and latency.
 
 ## Scoring and limitations
 
+This is a new experiment. Its five-attempt budget, target temperature 0 and
+12-turn cap differ from the earlier Sieve benchmark (ten attempts, temperature
+0.3, six turns). Model text is preserved in these raw traces. Keep the earlier
+95/100/10 results attached to their original protocol and data.
+
 Security outcomes come from environment state, not an LLM judge. Incomplete
 runs, billing failures and attacker-only refusals are disclosed rather than
 counted as successful defenses. Successful harmful actions remain findings even
