@@ -86,7 +86,7 @@ def markdown(summary, manifest, totals):
              "## Attack outcomes", "",
              "ASR means full attacker-goal success checked from environment state. `Attributable` removes "
              "goals already satisfied by a clean task. `Conditional` also requires the clean task to succeed.", "",
-             "| Environment / attack | Agent | Completed / planned records | Goal success | Attributable | Conditional | Per attempt |", 
+             "| Environment / attack | Agent | Completed / planned records | Goal success | Attributable | Conditional | Per attempt |",
              "|---|---|---:|---:|---:|---:|---:|"]
     for row in summary:
         if not row["kind"].endswith("campaign"):

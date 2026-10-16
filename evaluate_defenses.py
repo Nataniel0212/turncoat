@@ -24,7 +24,8 @@ def build_manifest(args):
     from sieve.evaluation import dojo
     s = dojo.suite()
     checks = s.check()
-    files = [Path(__file__), *sorted((ROOT / "sieve" / "evaluation").glob("*.py")),
+    files = [Path(__file__), *[ROOT / "sieve" / "evaluation" / f"{name}.py"
+                              for name in ("common", "dojo", "gate", "synthetic")],
              ROOT / "sieve" / "attacker.py", ROOT / "sieve" / "scenarios.py"]
     return {"schema_version": 1, "created_at": utc_now(),
             "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
@@ -40,6 +41,8 @@ def build_manifest(args):
             "agentdojo_source": "https://github.com/ethz-spylab/agentdojo",
             "agentdojo_commit": dojo.SOURCE_COMMIT, "agentdojo_version": dojo.BENCHMARK_VERSION,
             "agentdojo_suite": "banking", "agentdojo_upstream_self_checks": checks,
+            "agentdojo_canary_candidates": {t.ID: dojo.BaseAttack(s, None).get_injection_candidates(t)
+                                            for t in s.user_tasks.values()},
             "user_tasks": ["user_task_0"] if args.pilot else list(s.user_tasks),
             "injection_tasks": ["injection_task_5", "injection_task_7"] if args.pilot else list(s.injection_tasks),
             "agentdojo_adaptive_max_attempts": 2 if args.pilot else 3,

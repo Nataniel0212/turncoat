@@ -72,8 +72,11 @@ AgentDojo's installed source and scoring are unchanged. The supplementary
 - Goal 4/password goal 7: require a new state change. A goal already achieved by
   the clean user task is flagged as non-attributable, not credited to injection.
 
-Raw upstream utility scores are also retained. Some upstream self-checks fail;
-the exact failures are saved in the manifest. External environments improve
+Raw upstream utility scores are also retained. The upstream injectability
+self-check incorrectly filters for string content after messages became lists
+of content blocks; its original failures are saved in the manifest alongside
+the attack interface's successful canary discovery for all 16 tasks.
+External environments improve
 coverage but are still synthetic, and do not establish production adoption.
 There is no claim that these results are directly comparable to published
 AgentDojo leaderboards with different models, versions or attack budgets.
