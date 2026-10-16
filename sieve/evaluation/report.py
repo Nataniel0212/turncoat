@@ -117,7 +117,24 @@ def paired_rates(records):
     return out
 
 
-def markdown(summary, manifest, totals, paired=None):
+def attacker_comparison(records):
+    pairs = defaultdict(dict)
+    for r in records:
+        if r.get("kind") == "dojo_campaign" and r["arm"] == "lightning":
+            pairs[(r["user_task"], r["injection_task"])][r["attack_type"]] = r
+    common = [p for p in pairs.values() if all(a in p and p[a].get("attributable")
+                                              for a in ("static", "adaptive"))]
+    first = [p for p in pairs.values() if all(
+        a in p and p[a].get("clean_complete") and not p[a].get("goal_already_satisfied") and
+        p[a]["attempts"] and p[a]["attempts"][0]["complete"] and not p[a]["attempts"][0]["refused"]
+        for a in ("static", "adaptive"))]
+    return {"first_attempt": {a: rate(sum(p[a]["attempts"][0]["strict_attack_success"] for p in first), len(first))
+                              for a in ("static", "adaptive")},
+            "within_campaign_budget": {a: rate(sum(p[a]["attack_success"] for p in common), len(common))
+                                       for a in ("static", "adaptive")}}
+
+
+def markdown(summary, manifest, totals, paired=None, attackers=None):
     lines = ["# Measured defense and AgentDojo results", "",
              "Generated from the accompanying records and call ledger. Pilot runs are separate.", "",
              f"AgentDojo banking {manifest['agentdojo_version']}, source `{manifest['agentdojo_commit']}`.",
@@ -144,9 +161,22 @@ def markdown(summary, manifest, totals, paired=None):
         for name, data in paired.items():
             for label, key in (("complete + attributable", "asr"), ("also clean-success in all arms", "conditional_asr")):
                 lines.append(f"| {name} / {label} | " + " | ".join(_pct(data[key][arm]) for arm in ARMS) + " |")
-    lines += ["", "Static AgentDojo uses one attempt. Adaptive AgentDojo uses up to three, and is measured "
+    lines += ["", f"Static AgentDojo uses one attempt. Adaptive AgentDojo uses up to {manifest['agentdojo_adaptive_max_attempts']}, and is measured "
               "on Lightning only. These campaign rates do not have equal attack budgets. First-attempt rates "
-              "and Wilson intervals are in summary.json. Repeated fixtures/pairs are correlated.", "",
+              "and Wilson intervals are in summary.json. Repeated fixtures/pairs are correlated.", ""]
+    if attackers:
+        lines += ["### Attack methods on matched Lightning task pairs", "",
+                  "The static template includes Emma Johnson's name and the Nemotron family name. The "
+                  "adaptive generator receives the user task, goal, tool schemas, injection fields and feedback. "
+                  "This compares the implemented methods; it is not an ablation with identical knowledge.", "",
+                  "| Budget | Fixed template | Adaptive generator |",
+                  "|---|---:|---:|",
+                  "| First attempt, both completed | " + _pct(attackers["first_attempt"]["static"]) + " | " +
+                  _pct(attackers["first_attempt"]["adaptive"]) + " |",
+                  f"| Complete campaigns (fixed: 1; adaptive: up to {manifest['agentdojo_adaptive_max_attempts']}) | " +
+                  _pct(attackers["within_campaign_budget"]["static"]) + " | " +
+                  _pct(attackers["within_campaign_budget"]["adaptive"]) + " |", ""]
+    lines += [
               "## Useful work without injection", "",
               "| Environment | Agent | Success including incomplete runs | Mean cost per task |",
               "|---|---|---:|---:|"]
@@ -204,11 +234,13 @@ def generate(directory, export=None):
     calls = [json.loads(line) for line in (directory / "calls.jsonl").read_text(encoding="utf-8").splitlines()]
     summary = summarize(records, calls)
     paired = paired_rates(records)
+    attackers = attacker_comparison(records)
     totals = {"calls": len(calls), "cost_usd": sum(c.get("cost_usd") or 0 for c in calls),
               "accounted_usd": sum(c["accounted_usd"] for c in calls),
               "uncertain_billing_calls": sum(c.get("cost_usd") is None for c in calls)}
-    write_json(directory / "summary.json", {"groups": summary, "totals": totals, "matched_task_sets": paired})
-    (directory / "summary.md").write_text(markdown(summary, manifest, totals, paired), encoding="utf-8")
+    data = {"groups": summary, "totals": totals, "matched_task_sets": paired, "attacker_comparison": attackers}
+    write_json(directory / "summary.json", data)
+    (directory / "summary.md").write_text(markdown(summary, manifest, totals, paired, attackers), encoding="utf-8")
     if export:
         export = Path(export)
         if export.exists() and any(export.iterdir()):
@@ -221,8 +253,8 @@ def generate(directory, export=None):
         def redact(match):
             redactions.append({"sha256": digest(match.group()), "length": len(match.group())})
             return "[REDACTED_KEY_LIKE_MODEL_OUTPUT]"
-        for filename, data in (("records.json.gz", records), ("calls.json.gz", calls)):
-            text = pattern.sub(redact, json.dumps(data, ensure_ascii=False))
+        for filename, raw_data in (("records.json.gz", records), ("calls.json.gz", calls)):
+            text = pattern.sub(redact, json.dumps(raw_data, ensure_ascii=False))
             with gzip.GzipFile(filename=str(export / filename), mode="wb", mtime=0) as fh:
                 fh.write(text.encode("utf-8"))
         write_json(export / "manifest.json", manifest)
@@ -230,7 +262,7 @@ def generate(directory, export=None):
             "unit": "USD per million tokens", "checked_on": "2026-10-16",
             "source": "https://nebius.com/services/token-factory/models/nvidia-nemotron-models-inference",
             "rates": {model: list(PRICES[model]) for model in set(c["model"] for c in calls)}})
-        write_json(export / "summary.json", {"groups": summary, "totals": totals, "matched_task_sets": paired})
+        write_json(export / "summary.json", data)
         write_json(export / "redactions.json", redactions)
-        (export / "summary.md").write_text(markdown(summary, manifest, totals, paired), encoding="utf-8")
+        (export / "summary.md").write_text(markdown(summary, manifest, totals, paired, attackers), encoding="utf-8")
     print(json.dumps({"records": len(records), "groups": len(summary), **totals}))

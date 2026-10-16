@@ -177,3 +177,27 @@ def test_incomplete_runs_remain_in_useful_work_denominator():
     assert result["campaign_asr"]["n"] == 1
     assert result["final_attempt_utility_including_failures"]["successes"] == 1
     assert result["final_attempt_utility_including_failures"]["n"] == 2
+
+
+def test_public_bundle_preserves_summary_schema_and_redacts_only_payload(tmp_path):
+    import gzip
+    from sieve.evaluation.report import generate
+    from sieve.evaluation.common import write_json
+    private, public = tmp_path / "private", tmp_path / "public"
+    write_json(private / "manifest.json", {"agentdojo_version": "v1.2.2", "agentdojo_commit": "test",
+               "synthetic_max_attempts": 5, "agentdojo_adaptive_max_attempts": 3})
+    write_json(private / "records" / "clean.json", {"job_id": "clean", "kind": "dojo_clean", "arm": "lightning",
+               "complete": True, "utility": True})
+    fake_key = "sk-" + "testcredential" * 3
+    call = {"job_id": "clean", "phase": "baseline", "attempt": 0, "model": LIGHTNING,
+            "cost_usd": 0.001, "accounted_usd": 0.001, "latency_s": 1, "response": fake_key}
+    (private / "calls.jsonl").write_text(json.dumps(call) + "\n", encoding="utf-8")
+    generate(private, public)
+    summary = json.loads((public / "summary.json").read_text())
+    assert isinstance(summary, dict)
+    assert summary["groups"][0]["kind"] == "dojo_clean"
+    with gzip.open(public / "calls.json.gz", "rt", encoding="utf-8") as fh:
+        exported = fh.read()
+    assert fake_key not in exported
+    assert json.loads(exported)[0]["cost_usd"] == 0.001
+    assert len(json.loads((public / "redactions.json").read_text())) == 1
