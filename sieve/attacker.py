@@ -1,6 +1,8 @@
-"""The TAP attacker: MODEL_ATTACKER (NVIDIA Nemotron via Nebius) writes one
+"""The adaptive attacker: MODEL_ATTACKER (NVIDIA Nemotron via Nebius) writes one
 injection, is told how far the agent got, and rewrites the next one. Adaptive,
-progress-driven attacks beat static templates (TAP, arXiv:2606.10525).
+progress-driven attacks beat static templates (TAP, arXiv:2606.10525). This is
+an iterative refinement loop inspired by TAP, without its tree search or
+pruning: one candidate per attempt, with techniques rotating in a fixed order.
 
 Scenario-driven: the goal, the injection point and the signals all come from the
 active scenario. The attacker only ever targets the controlled test agent here —

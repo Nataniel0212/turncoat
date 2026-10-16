@@ -13,6 +13,8 @@ venv/
 # Run outputs (measured data is regenerated each run)
 runs/
 *.jsonl
+# ...except the published raw data behind the results (scripts/export_raw.py)
+!results/raw/*.jsonl
 report.md
 report.html
 report.fragment.html

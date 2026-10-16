@@ -17,3 +17,4 @@ examples
 /report.*
 /benchmark.*
 /compare.*
+/results/raw

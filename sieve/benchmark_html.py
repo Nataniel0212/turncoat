@@ -25,7 +25,7 @@ def _esc(x) -> str:
 
 
 HEAD = """<meta name="claude:viewport-fit-sides" content="cover">
-<title>Sieve Benchmark</title>
+<title>Turncoat Benchmark</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
 :root{
@@ -212,7 +212,7 @@ def _body(bench: dict) -> str:
 
     return f"""<div class="wrap">
 <header>
-  <div class="brand">S<b>I</b>EVE</div>
+  <div class="brand">TURN<b>COAT</b></div>
   <div class="tagline">Prompt-injection benchmark for tool-using AI agents</div>
   <span class="badge">{mode_label}</span>
   <span class="badge" id="theme">◐ theme</span>
@@ -245,7 +245,7 @@ as the rates above.</p>
 <div class="card">{_technique_chart(bench["scenarios"])}</div>
 
 <footer>
-  <span class="mono">Sieve</span> · measured on Nebius Token Factory with NVIDIA
+  <span class="mono">Turncoat</span> · measured on Nebius Token Factory with NVIDIA
   Nemotron · {_esc(bench['total_trials'])} trials, ${bench['total_cost']:.3f}<br>
   Rates estimate this attacker against this agent within this attempt budget —
   not an absolute vulnerability. Every number comes from the run logs.

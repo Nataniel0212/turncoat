@@ -177,7 +177,7 @@ def _body(data):
         for j, n in enumerate(names))
     return f"""<div class="wrap">
 <header>
-  <div class="brand">S<b>I</b>EVE</div>
+  <div class="brand">TURN<b>COAT</b></div>
   <div class="tagline">Model comparison: does a stronger agent resist prompt injection?</div>
   <span class="badge mono">LIVE · NEBIUS</span>
   <span class="badge mono" id="theme">theme</span>

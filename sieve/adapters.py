@@ -1,7 +1,7 @@
 """Local Python adapter for an agent's own orchestration and tool policy.
 
 An adapter exports run_agent(context) -> str. Its model calls go through the
-metered Nebius client, and its tools use Sieve's synthetic environment so the
+metered Nebius client, and its tools use Turncoat's synthetic environment so the
 verdict still comes from actions. Loading Python executes trusted local code;
 this interface is intentionally not exposed by the public web API.
 """

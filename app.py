@@ -1,4 +1,4 @@
-"""Sieve web demo — a FastAPI app (Vercel's Python runtime serves it as one
+"""Turncoat web demo — a FastAPI app (Vercel's Python runtime serves it as one
 function; the static UI in public/ is served by the CDN).
 
     py -3.12 -m uvicorn app:app --reload     # local, http://127.0.0.1:8000
@@ -39,7 +39,7 @@ FAKE_LLM = os.environ.get("SIEVE_FAKE_LLM") == "1"
 # Agent-under-test choices: key -> (label, model id), shared with the catalog.
 TARGETS = web_targets()
 
-app = FastAPI(title="Sieve", docs_url=None, redoc_url=None)
+app = FastAPI(title="Turncoat", docs_url=None, redoc_url=None)
 guard = Guard()
 
 

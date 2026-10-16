@@ -58,17 +58,35 @@ def parse_md(path: Path) -> dict:
         p, lo, hi = wilson(k, n)
         mean, least, most = re.search(r"mean ([\d.]+), min (\d+), max (\d+)", body).groups()
         refused = float(re.search(r"Attacker refused ([\d.]+)%", body).group(1)) / 100
+        techniques = [{"k": int(a), "n": int(b)} for a, b in
+                      re.findall(r"\((\d+)/(\d+)\)", body.split("technique:")[1])]
         run["scenarios"].append({"key": key, "trials": int(trials), "exceedance": {"critical": {
             "k": k, "n": n, "p": p, "lo": lo, "hi": hi}},
             "attempts": {"mean": float(mean), "min": int(least), "max": int(most)},
-            "attacker_refusal_rate": refused})
+            "techniques": techniques, "attacker_refusal_rate": refused})
     run["total_trials"] = sum(s["trials"] for s in run["scenarios"])
     return run
 
 
+def per_attempt(s: dict) -> str:
+    """Full compromises per real attempt, from the per-technique counts."""
+    k, n = sum(t["k"] for t in s["techniques"]), sum(t["n"] for t in s["techniques"])
+    return f"{pct(k / n)} per attempt" if n else "no real attempts"
+
+
+def attempt_cap(run: dict) -> int | None:
+    """The per-campaign attempt cap: recorded by newer runs; for older ones, a
+    valid campaign that was not compromised ran exactly to the cap."""
+    if run.get("max_attempts"):
+        return run["max_attempts"]
+    held = [s["attempts"]["max"] for s in run["scenarios"]
+            if s["exceedance"]["critical"]["k"] < s["exceedance"]["critical"]["n"]]
+    return max(held) if held else None
+
+
 def attempts_note(runs: list[dict]) -> str:
-    """State the attempt cap when the results record it, else the observed range."""
-    caps = {r.get("max_attempts") for r in runs}
+    """State the attempt cap when the results establish it, else the observed range."""
+    caps = {attempt_cap(r) for r in runs}
     if len(caps) == 1 and None not in caps:
         return f"Up to {caps.pop()} attempts per campaign."
     lo = min(s["attempts"]["min"] for r in runs for s in r["scenarios"])
@@ -113,7 +131,7 @@ def bench_card(title: str, run: dict) -> str:
     rows = "".join(
         ci_row(LABEL[s["key"]], s["exceedance"]["critical"],
                f'{s["exceedance"]["critical"]["k"]}/{s["exceedance"]["critical"]["n"]} · '
-               f'mean {s["attempts"]["mean"]} attempts')
+               f'{per_attempt(s)} · mean {s["attempts"]["mean"]} attempts')
         for s in run["scenarios"])
     refusals = " / ".join(pct(s.get("attacker_refusal_rate", 0)) for s in run["scenarios"])
     trials = counted([s["trials"] for s in run["scenarios"]], "trials")
@@ -129,11 +147,14 @@ def render() -> tuple[str, dict]:
     stats = json.loads((RES / "campaign-stats-2026-10-16.json").read_text(encoding="utf-8"))
     target = NAMES.get(day2["models"]["target"], day2["models"]["target"])
     by_key = {s["key"]: s for s in day2["scenarios"]}
-    hero = (f'<figcaption class="cap">Full compromise · {escape(target)} agents · '
+    cap = attempt_cap(day2)
+    within = f" within {cap} attempts" if cap else ""
+    hero = (f'<figcaption class="cap">Full compromise{within} · {escape(target)} agents · '
             f'{day(day2["generated"], year=True)}</figcaption>')
     hero += '<div class="cibar">' + "".join(
         ci_row(LABEL[key], by_key[key]["exceedance"]["critical"],
-               f'{by_key[key]["exceedance"]["critical"]["k"]}/{by_key[key]["exceedance"]["critical"]["n"]} campaigns')
+               f'{by_key[key]["exceedance"]["critical"]["k"]}/{by_key[key]["exceedance"]["critical"]["n"]} '
+               f'campaigns · {per_attempt(by_key[key])}')
         for key in ("bank", "inbox", "docs")) + '</div>'
     hero += '<div class="foot-note">Whiskers: 95% Wilson intervals. Synthetic agents; not a general model rating.</div>'
     measured = stats[day2["models"]["target"]]
@@ -149,7 +170,7 @@ def render() -> tuple[str, dict]:
     bench += bench_card(f'{day(day2["generated"])} · independent replication', day2) + '</div>'
     bench += (f'<p class="note">Target: {escape(target)}. {attempts_note([day1, day2])} '
               'Each interval describes one day, not pooled trials. '
-              '<a href="https://github.com/Nataniel0212/sieve/tree/main/results">Raw reports and methodology ↗</a></p>')
+              '<a href="https://github.com/Nataniel0212/turncoat/tree/main/results">Raw reports and methodology ↗</a></p>')
     compare = '<div class="tablewrap"><table class="comparison"><caption>Full-compromise rate by target model</caption><thead><tr><th>Target model</th>'
     compare += "".join(f'<th>{escape(LABEL[k])}</th>' for k in comp["scenarios"]) + '</tr></thead><tbody>'
     for model in comp["models"]:

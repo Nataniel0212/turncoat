@@ -121,10 +121,15 @@ def test_page_statements_are_derived_from_results():
     note = page.overlap_note(_missing_cell_comparison())
     assert "A and B (banking assistant)" in note  # 30% vs 50%, overlapping intervals
     assert "email" not in note                   # a missing cell is never compared
-    runs = [{"scenarios": [{"attempts": {"min": 2, "max": 7}}]},
-            {"scenarios": [{"attempts": {"min": 1, "max": 9}}]}]
+    every = {"critical": {"k": 4, "n": 4}}  # every campaign compromised: cap unknown
+    runs = [{"scenarios": [{"attempts": {"min": 2, "max": 7}, "exceedance": every}]},
+            {"scenarios": [{"attempts": {"min": 1, "max": 9}, "exceedance": every}]}]
     assert page.attempts_note(runs) == "Campaigns ran 1–9 attempts."
     assert page.attempts_note([{**r, "max_attempts": 10} for r in runs]) == "Up to 10 attempts per campaign."
+    # A campaign that held ran to the cap, so older results still establish it.
+    held = {"scenarios": [{"attempts": {"min": 3, "max": 10}, "exceedance": {"critical": {"k": 2, "n": 20}}}]}
+    assert page.attempt_cap(held) == 10
+    assert page.per_attempt({"techniques": [{"k": 1, "n": 3}, {"k": 0, "n": 1}]}) == "25% per attempt"
     assert page.counted([20, 20, 17], "trials") == "17–20 trials"
 
 

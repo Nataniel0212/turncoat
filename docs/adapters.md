@@ -1,6 +1,6 @@
 # Test your own Python agent
 
-Sieve can run your agent's orchestration, message handling and tool policy in
+Turncoat can run your agent's orchestration, message handling and tool policy in
 place of its built-in target loop. The adaptive attacker, per-call metering,
 synthetic tools, action-based verdicts and benchmark stay the same.
 
@@ -25,7 +25,7 @@ new live model-comparison measurements. The policy blocks actions in application
 code; it does not make the model itself more resistant to injections.
 
 Export a synchronous function `run_agent(context) -> str` from a local Python
-file and pass `--agent path/to/file.py:run_agent`. Sieve invokes it with fresh
+file and pass `--agent path/to/file.py:run_agent`. Turncoat invokes it with fresh
 synthetic state for the benign baseline and each attack. Keep per-run state
 inside the function so one campaign does not contaminate another.
 
@@ -46,7 +46,7 @@ the actions taken so far, as the built-in agent's step cap does, and the
 campaign continues. Budget stops apply between calls. An API
 response can cross the budget by the cost of that last call.
 
-The adapter cannot declare itself safe: Sieve classifies the resulting sandbox
+The adapter cannot declare itself safe: Turncoat classifies the resulting sandbox
 state. If an agent already performs an unauthorized action with benign content,
 the campaign stops with `baseline_failed`. Incomplete campaigns and campaigns
 containing no real attack are excluded from benchmark rates. No valid trials
@@ -54,7 +54,7 @@ means **N/A**, not 0% attack success.
 
 Adapters execute trusted local Python code. They are not uploaded to the public
 demo and are not a sandbox for untrusted plugins. This version evaluates your
-agent logic against Sieve's three synthetic scenarios; it is not an HTTP connector
+agent logic against Turncoat's three synthetic scenarios; it is not an HTTP connector
 to a running production agent. For a different domain, implement a `Scenario`
 with its own fixture tools, injection point and deterministic state checks.
 

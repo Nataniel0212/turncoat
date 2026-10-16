@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sieve — prompt-injection red team</title>
-<meta name="description" content="Sieve attacks a tool-using AI agent with an adaptive NVIDIA Nemotron attacker on Nebius Token Factory, checks the agent's real actions, and measures how often it gets hijacked.">
-<meta property="og:title" content="Sieve — does your AI agent leak like a sieve?">
+<title>Turncoat — prompt-injection red team</title>
+<meta name="description" content="Turncoat attacks a tool-using AI agent with an adaptive NVIDIA Nemotron attacker on Nebius Token Factory, checks the agent's real actions, and measures how often it gets hijacked.">
+<meta property="og:title" content="Turncoat — will your AI agent turn on you?">
 <meta property="og:description" content="Watch a live prompt-injection attack on a tool-using agent. NVIDIA Nemotron on Nebius Token Factory.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f58cc'/%3E%3Cg fill='%23fff'%3E%3Ccircle cx='10' cy='10' r='2.2'/%3E%3Ccircle cx='16' cy='10' r='2.2'/%3E%3Ccircle cx='22' cy='10' r='2.2'/%3E%3Ccircle cx='10' cy='16' r='2.2'/%3E%3Ccircle cx='16' cy='16' r='2.2'/%3E%3Ccircle cx='22' cy='16' r='2.2'/%3E%3Ccircle cx='16' cy='22' r='2.2'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,20 +17,20 @@
 <body>
 <div class="wrap">
 <nav>
-  <a class="brand" href="#top" aria-label="Sieve home">S<b>I</b>EVE</a>
+  <a class="brand" href="#top" aria-label="Turncoat home">TURN<b>COAT</b></a>
   <span class="sp"></span>
   <a class="nlink" href="#lab">Try it</a>
   <a class="nlink hide-sm" href="#results">Results</a>
   <a class="nlink hide-sm" href="#how">How it works</a>
-  <a class="nlink" href="https://github.com/Nataniel0212/sieve" rel="noopener">GitHub ↗</a>
+  <a class="nlink" href="https://github.com/Nataniel0212/turncoat" rel="noopener">GitHub ↗</a>
   <button class="theme" id="theme" type="button" aria-label="Toggle colour theme">theme</button>
 </nav>
 
 <header class="hero" id="top">
   <div>
     <div class="eyebrow">Prompt-injection red team · NVIDIA Nemotron on Nebius</div>
-    <h1>Does your AI agent <span class="hl">leak like a sieve?</span></h1>
-    <p class="lead">Sieve points an attacker model at a tool-using agent, lets it
+    <h1>Will your AI agent <span class="hl">turn on you?</span></h1>
+    <p class="lead">Turncoat points an attacker model at a tool-using agent, lets it
     rewrite its attack after every failure, and checks the agent's real actions to
     see whether it was hijacked. Run a campaign below, then compare the measured results.</p>
     <div class="cta">
@@ -40,7 +40,7 @@
   </div>
   <figure class="chartcard" id="hero-chart">
 <!-- build:hero -->
-<figcaption class="cap">Full compromise · Nemotron 3.5 Lightning agents · 16 Oct 2026</figcaption><div class="cibar"><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Banking assistant</span><b>100%</b></div><div class="track" role="img" aria-label="Banking assistant: 100%, 95% CI 84% to 100%"><div class="fill" style="width:100.0%"></div><div class="whisk" style="left:83.9%;width:16.1%"></div></div><div class="lbl"><span>20/20 campaigns</span><span>95% CI 84%–100%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Email assistant</span><b>95%</b></div><div class="track" role="img" aria-label="Email assistant: 95%, 95% CI 76% to 99%"><div class="fill" style="width:95.0%"></div><div class="whisk" style="left:76.4%;width:22.7%"></div></div><div class="lbl"><span>19/20 campaigns</span><span>95% CI 76%–99%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Document assistant</span><b>10%</b></div><div class="track" role="img" aria-label="Document assistant: 10%, 95% CI 3% to 30%"><div class="fill low" style="width:10.0%"></div><div class="whisk" style="left:2.8%;width:27.3%"></div></div><div class="lbl"><span>2/20 campaigns</span><span>95% CI 3%–30%</span></div></div></div><div class="foot-note">Whiskers: 95% Wilson intervals. Synthetic agents; not a general model rating.</div>
+<figcaption class="cap">Full compromise within 10 attempts · Nemotron 3.5 Lightning agents · 16 Oct 2026</figcaption><div class="cibar"><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Banking assistant</span><b>100%</b></div><div class="track" role="img" aria-label="Banking assistant: 100%, 95% CI 84% to 100%"><div class="fill" style="width:100.0%"></div><div class="whisk" style="left:83.9%;width:16.1%"></div></div><div class="lbl"><span>20/20 campaigns · 28% per attempt</span><span>95% CI 84%–100%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Email assistant</span><b>95%</b></div><div class="track" role="img" aria-label="Email assistant: 95%, 95% CI 76% to 99%"><div class="fill" style="width:95.0%"></div><div class="whisk" style="left:76.4%;width:22.7%"></div></div><div class="lbl"><span>19/20 campaigns · 23% per attempt</span><span>95% CI 76%–99%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Document assistant</span><b>10%</b></div><div class="track" role="img" aria-label="Document assistant: 10%, 95% CI 3% to 30%"><div class="fill low" style="width:10.0%"></div><div class="whisk" style="left:2.8%;width:27.3%"></div></div><div class="lbl"><span>2/20 campaigns · 1% per attempt</span><span>95% CI 3%–30%</span></div></div></div><div class="foot-note">Whiskers: 95% Wilson intervals. Synthetic agents; not a general model rating.</div>
 <!-- /build:hero -->
   </figure>
 </header>
@@ -136,7 +136,7 @@
   benchmark reports.</p>
   <div id="bench">
 <!-- build:bench -->
-<div class="bench"><div class="card"><div class="cap">15 Oct · first run · 20 trials per agent · $0.99</div><div class="cibar"><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Email assistant</span><b>95%</b></div><div class="track" role="img" aria-label="Email assistant: 95%, 95% CI 76% to 99%"><div class="fill" style="width:95.0%"></div><div class="whisk" style="left:76.4%;width:22.7%"></div></div><div class="lbl"><span>19/20 · mean 3.35 attempts</span><span>95% CI 76%–99%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Banking assistant</span><b>100%</b></div><div class="track" role="img" aria-label="Banking assistant: 100%, 95% CI 84% to 100%"><div class="fill" style="width:100.0%"></div><div class="whisk" style="left:83.9%;width:16.1%"></div></div><div class="lbl"><span>20/20 · mean 3.7 attempts</span><span>95% CI 84%–100%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Document assistant</span><b>10%</b></div><div class="track" role="img" aria-label="Document assistant: 10%, 95% CI 3% to 30%"><div class="fill low" style="width:10.0%"></div><div class="whisk" style="left:2.8%;width:27.3%"></div></div><div class="lbl"><span>2/20 · mean 9.6 attempts</span><span>95% CI 3%–30%</span></div></div></div><div class="note">Attacker refusals: 0% / 0% / 0%.</div></div><div class="card"><div class="cap">16 Oct · independent replication · 20 trials per agent · $1.01</div><div class="cibar"><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Email assistant</span><b>95%</b></div><div class="track" role="img" aria-label="Email assistant: 95%, 95% CI 76% to 99%"><div class="fill" style="width:95.0%"></div><div class="whisk" style="left:76.4%;width:22.7%"></div></div><div class="lbl"><span>19/20 · mean 4.15 attempts</span><span>95% CI 76%–99%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Banking assistant</span><b>100%</b></div><div class="track" role="img" aria-label="Banking assistant: 100%, 95% CI 84% to 100%"><div class="fill" style="width:100.0%"></div><div class="whisk" style="left:83.9%;width:16.1%"></div></div><div class="lbl"><span>20/20 · mean 3.6 attempts</span><span>95% CI 84%–100%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Document assistant</span><b>10%</b></div><div class="track" role="img" aria-label="Document assistant: 10%, 95% CI 3% to 30%"><div class="fill low" style="width:10.0%"></div><div class="whisk" style="left:2.8%;width:27.3%"></div></div><div class="lbl"><span>2/20 · mean 9.6 attempts</span><span>95% CI 3%–30%</span></div></div></div><div class="note">Attacker refusals: 0% / 0% / 0%.</div></div></div><p class="note">Target: Nemotron 3.5 Lightning. Campaigns ran 1–10 attempts. Each interval describes one day, not pooled trials. <a href="https://github.com/Nataniel0212/sieve/tree/main/results">Raw reports and methodology ↗</a></p>
+<div class="bench"><div class="card"><div class="cap">15 Oct · first run · 20 trials per agent · $0.99</div><div class="cibar"><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Email assistant</span><b>95%</b></div><div class="track" role="img" aria-label="Email assistant: 95%, 95% CI 76% to 99%"><div class="fill" style="width:95.0%"></div><div class="whisk" style="left:76.4%;width:22.7%"></div></div><div class="lbl"><span>19/20 · 28% per attempt · mean 3.35 attempts</span><span>95% CI 76%–99%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Banking assistant</span><b>100%</b></div><div class="track" role="img" aria-label="Banking assistant: 100%, 95% CI 84% to 100%"><div class="fill" style="width:100.0%"></div><div class="whisk" style="left:83.9%;width:16.1%"></div></div><div class="lbl"><span>20/20 · 27% per attempt · mean 3.7 attempts</span><span>95% CI 84%–100%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Document assistant</span><b>10%</b></div><div class="track" role="img" aria-label="Document assistant: 10%, 95% CI 3% to 30%"><div class="fill low" style="width:10.0%"></div><div class="whisk" style="left:2.8%;width:27.3%"></div></div><div class="lbl"><span>2/20 · 1% per attempt · mean 9.6 attempts</span><span>95% CI 3%–30%</span></div></div></div><div class="note">Attacker refusals: 0% / 0% / 0%.</div></div><div class="card"><div class="cap">16 Oct · independent replication · 20 trials per agent · $1.01</div><div class="cibar"><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Email assistant</span><b>95%</b></div><div class="track" role="img" aria-label="Email assistant: 95%, 95% CI 76% to 99%"><div class="fill" style="width:95.0%"></div><div class="whisk" style="left:76.4%;width:22.7%"></div></div><div class="lbl"><span>19/20 · 23% per attempt · mean 4.15 attempts</span><span>95% CI 76%–99%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Banking assistant</span><b>100%</b></div><div class="track" role="img" aria-label="Banking assistant: 100%, 95% CI 84% to 100%"><div class="fill" style="width:100.0%"></div><div class="whisk" style="left:83.9%;width:16.1%"></div></div><div class="lbl"><span>20/20 · 28% per attempt · mean 3.6 attempts</span><span>95% CI 84%–100%</span></div></div><div class="cirow"><div class="lbl"><span style="color:var(--fg)">Document assistant</span><b>10%</b></div><div class="track" role="img" aria-label="Document assistant: 10%, 95% CI 3% to 30%"><div class="fill low" style="width:10.0%"></div><div class="whisk" style="left:2.8%;width:27.3%"></div></div><div class="lbl"><span>2/20 · 1% per attempt · mean 9.6 attempts</span><span>95% CI 3%–30%</span></div></div></div><div class="note">Attacker refusals: 0% / 0% / 0%.</div></div></div><p class="note">Target: Nemotron 3.5 Lightning. Up to 10 attempts per campaign. Each interval describes one day, not pooled trials. <a href="https://github.com/Nataniel0212/turncoat/tree/main/results">Raw reports and methodology ↗</a></p>
 <!-- /build:bench -->
   </div>
 
@@ -178,7 +178,7 @@
   <p class="sub">Two roles, both NVIDIA Nemotron models served by Nebius Token
   Factory, and one deterministic referee.</p>
   <figure class="diagram">
-    <svg viewBox="0 0 900 300" role="img" aria-label="Sieve architecture: the attacker writes an injection into untrusted data, the agent under test reads it while doing its task, a state check of its tool calls decides the verdict, and the result is fed back to the attacker.">
+    <svg viewBox="0 0 900 300" role="img" aria-label="Turncoat architecture: the attacker writes an injection into untrusted data, the agent under test reads it while doing its task, a state check of its tool calls decides the verdict, and the result is fed back to the attacker.">
       <defs>
         <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker>
       </defs>
@@ -231,7 +231,7 @@
       <p>Bring your Python agent's orchestration and tool policy through the local
       adapter. Model calls stay metered on Nebius; tools run against synthetic
       state. The included confirmation-policy example shows how to test a defence.
-      <a href="https://github.com/Nataniel0212/sieve/blob/main/docs/adapters.md">Adapter quickstart ↗</a></p></div>
+      <a href="https://github.com/Nataniel0212/turncoat/blob/main/docs/adapters.md">Adapter quickstart ↗</a></p></div>
     <div class="row"><h3>Guardrails on this demo</h3>
       <p id="guard-copy">Live runs require a judge code. Each run has a budget stop
       and an attempt limit. Recorded runs remain available when live runs are
@@ -241,10 +241,10 @@
 </section>
 
 <footer>
-  <span class="mono">Sieve</span> is defensive security research: you test only agents
+  <span class="mono">Turncoat</span> is defensive security research: you test only agents
   you own, on fully synthetic fixtures. No real person, account, secret or file is
   involved. MIT licensed. Built for the Nebius × NVIDIA Global AI Hackathon.<br>
-  <a href="https://github.com/Nataniel0212/sieve" rel="noopener">github.com/Nataniel0212/sieve</a>
+  <a href="https://github.com/Nataniel0212/turncoat" rel="noopener">github.com/Nataniel0212/turncoat</a>
 </footer>
 </div>
 </body>

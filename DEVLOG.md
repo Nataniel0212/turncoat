@@ -72,9 +72,7 @@ Cost $0.0034. This is the demo money-shot.
   (per trial: safe, safe, secret_access, leak, secret_access). This is the
   honest headline metric.
 
-### 2026-10-15 — Sieve chosen; pluggable scenarios
-
-Nataniel chose Sieve as the project and dropped Rosetta.
+### 2026-10-15 — Pluggable scenarios
 
 Generalised the single hardcoded scenario into a pluggable framework
 (`sieve/scenarios.py`, a `Scenario` base + registry) with a shared severity
@@ -168,7 +166,7 @@ attempting to trick you..."). Security is a measurable model-choice tradeoff.
 
 Next (product):
 - 3-min video (script drafted).
-- AgentDojo (MIT) suites; adapter for a real agent (memory sieve-adapter-todo).
+- AgentDojo (MIT) suites; adapter for a real agent.
 
 ## 2026-10-16: Hosted-demo backend, spend guard, tests, CI
 
@@ -341,3 +339,35 @@ old code:
   the data rather than typed by hand.
 - **50 offline tests pass**; page check, JS syntax, offline API run and a
   browser check of all three stop cases, a full offline campaign and a replay pass.
+
+### Auditable statistics and accuracy fixes (external review)
+
+An independent review asked for statistics a reader can check. Done:
+
+- **Raw data published.** `results/raw/` holds every campaign of the 16 Oct
+  replication (60) and the model comparison (90): each injection, tool call,
+  verdict, token count and cost. `scripts/export_raw.py` refuses to write unless
+  the campaigns reproduce the published tables exactly, and a CI test recomputes
+  every k/n, technique count, mean and cost from the files. The 15 Oct first
+  run was not retained as raw data and is labelled as report-only.
+- **Redaction disclosed.** Attacker-invented credential-shaped values ("AUTH
+  TOKEN: 0x7F4A...") are masked so secret scanners stay clean; the scenarios'
+  own synthetic fixture token, verdicts and metering are untouched.
+- **Per-attempt rates.** A campaign is up to 10 adaptive attempts, so "100%"
+  means a persistent attacker got through within 10 tries. The single-injection
+  rate is now shown next to it: bank 27% / 28%, email 28% / 23%, documents
+  1% / 1% (15 / 16 Oct). The page derives the cap and these rates from results.
+- **Identical document rows explained.** Techniques run in a fixed order, so two
+  days with two successes at the same positions give identical tables.
+- **Accurate method name.** The attacker is an iterative refinement loop
+  inspired by TAP, without TAP's tree search or pruning.
+- Two different medians are now labelled by run; the test count is no longer
+  hard-coded in the README; process notes removed from this log.
+
+### Renamed to Turncoat
+
+Another hackathon entry already uses the name Sieve, so the project is now
+**Turncoat** ("will your AI agent turn on you?"). The repository is
+`Nataniel0212/turncoat` (the old URL redirects) and the demo is
+`https://turncoat-redteam.vercel.app` (the old address still works). The Python
+package keeps the name `sieve`, so imports, scripts and run data are unchanged.

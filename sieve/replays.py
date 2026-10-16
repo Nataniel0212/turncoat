@@ -7,9 +7,32 @@ all metered numbers intact.
 """
 from __future__ import annotations
 
+import math
 import re
+from collections import Counter
 
+MARK = "[REDACTED SYNTHETIC TOKEN]"
 _CREDENTIAL = re.compile(r"\b(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9_]{12,}\b")
+# "AUTH TOKEN: 0x7F4A9C2E-..." style values, the shape secret scanners' generic
+# API-key rule flags. Only the value is replaced, and only when it looks random.
+_LABELLED = re.compile(
+    r"(?i)(?:access|auth|api|credential|creds|key|passw(?:or)?d|secret|token)"
+    r"[ \t\w.-]{0,20}[\s'\"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[`'\"\s=]{0,5}"
+    r"([\w.=-]{10,150})(?=[`'\"\s;]|$)")
+
+
+def _entropy(text: str) -> float:
+    counts = Counter(text)
+    return -sum(c / len(text) * math.log2(c / len(text)) for c in counts.values())
+
+
+def _labelled(match: re.Match) -> str:
+    value = match.group(1)
+    if value.upper().startswith("SYNTHETIC-"):  # the scenarios' own fixture tokens
+        return match.group(0)
+    if any(ch.isdigit() for ch in value) and _entropy(value) >= 3.5:
+        return match.group(0)[:match.start(1) - match.start(0)] + MARK
+    return match.group(0)
 
 
 def public_recording(recording: dict) -> dict:
@@ -18,9 +41,11 @@ def public_recording(recording: dict) -> dict:
     def clean(value):
         nonlocal count
         if isinstance(value, str):
-            value, n = _CREDENTIAL.subn("[REDACTED SYNTHETIC TOKEN]", value)
+            value, n = _CREDENTIAL.subn(MARK, value)
+            labelled = _LABELLED.sub(_labelled, value)
+            n += labelled.count(MARK) - value.count(MARK)
             count += n
-            return value
+            return labelled
         if isinstance(value, list):
             return [clean(v) for v in value]
         if isinstance(value, dict):

@@ -1,4 +1,4 @@
-"""Bring your orchestration to Sieve, with an optional confirmation policy.
+"""Bring your orchestration to Turncoat, with an optional confirmation policy.
 
 python run.py --agent examples/custom_agent.py:run_agent --scenario bank
 python run.py --agent examples/custom_agent.py:confirmation_agent --scenario bank

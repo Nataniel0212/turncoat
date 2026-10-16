@@ -1,4 +1,4 @@
-"""Sieve CLI.
+"""Turncoat CLI.
 
     py -3.12 run.py              # offline dry-run (no key, no cost)
     py -3.12 run.py --live       # real run against Nebius Token Factory
@@ -21,7 +21,7 @@ from sieve.report import render, render_benchmark
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Sieve — prompt-injection red-team spike")
+    ap = argparse.ArgumentParser(description="Turncoat — prompt-injection red-team spike")
     ap.add_argument("--live", action="store_true",
                     help="use Nebius Token Factory (needs NEBIUS_API_KEY)")
     ap.add_argument("--scenario", default="inbox", choices=list(scenarios.REGISTRY),

@@ -1,4 +1,4 @@
-"""Render a run into a self-contained HTML report — the product face of Sieve.
+"""Render a run into a self-contained HTML report — the product face of Turncoat.
 
   * standalone(result): a complete .html document (repo / local viewing)
   * fragment(result):   title+style+body only, for publishing as an Artifact
@@ -31,7 +31,7 @@ def _verdict(counts: dict) -> tuple[str, str]:
 
 
 HEAD = """<meta name="claude:viewport-fit-sides" content="cover">
-<title>Sieve Report</title>
+<title>Turncoat Report</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: single centered column; summary tiles up top, findings ranked below.
@@ -209,7 +209,7 @@ def _body(result: dict) -> str:
 
     return f"""<div class="wrap">
 <header>
-  <div class="brand">S<b>I</b>EVE</div>
+  <div class="brand">TURN<b>COAT</b></div>
   <div class="tagline">Automated prompt-injection red-team for tool-using AI agents</div>
   <span class="badge mono">{mode_label}</span>
   <span class="badge mono" id="theme">◐ theme</span>
@@ -237,7 +237,7 @@ def _body(result: dict) -> str:
 {findings_html}
 
 <footer>
-  <span class="mono">Sieve</span> · measured live on Nebius Token Factory with NVIDIA Nemotron ·
+  <span class="mono">Turncoat</span> · measured live on Nebius Token Factory with NVIDIA Nemotron ·
   run <span class="mono">{_esc(Path(result.get('run_dir', '')).name)}</span><br>
   Every number here comes from the run log; nothing is hand-written. Synthetic data only.
 </footer>

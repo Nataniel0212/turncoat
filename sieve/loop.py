@@ -1,5 +1,5 @@
-"""Orchestration: baseline safety check, then the TAP attack loop with a hard
-budget guard. Each run gets its own timestamped directory; every attempt is
+"""Orchestration: baseline safety check, then the adaptive attack loop with a
+hard budget guard. Each run gets its own timestamped directory; every attempt is
 persisted with the signals it achieved. Returns a structured result the report
 renders.
 

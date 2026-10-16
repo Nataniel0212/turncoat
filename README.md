@@ -1,9 +1,9 @@
-# Sieve
+# Turncoat
 
-[![ci](https://github.com/Nataniel0212/sieve/actions/workflows/ci.yml/badge.svg)](https://github.com/Nataniel0212/sieve/actions/workflows/ci.yml)
+[![ci](https://github.com/Nataniel0212/turncoat/actions/workflows/ci.yml/badge.svg)](https://github.com/Nataniel0212/turncoat/actions/workflows/ci.yml)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-**Does your AI agent leak like a sieve?** Sieve is an automated prompt-injection
+**Will your AI agent turn on you?** Turncoat is an automated prompt-injection
 red team and **benchmark** for tool-using LLM agents. It attacks an agent you
 control with an adaptive attacker model, checks every outcome against the agent's
 real tool calls, and reports an **attack-success rate with 95% confidence
@@ -17,8 +17,11 @@ with Nano 30B and Ultra 550B for comparison.
 > Defensive security research in the tradition of garak and PyRIT: you only test
 > agents you own. Synthetic data only. No real person, account, secret or file
 > exists anywhere in this repo.
+>
+> Formerly named Sieve. The Python package and run directories keep the name
+> `sieve`; old repository and demo links redirect or still work.
 
-**[Open the interactive demo](https://sieve-redteam.vercel.app)** — nine recorded
+**[Open the interactive demo](https://turncoat-redteam.vercel.app)** — nine recorded
 live campaigns are available without a code. Judges can also start a new campaign
 using the code in the private testing instructions.
 
@@ -31,14 +34,23 @@ using the code in the private testing instructions.
 Three agents, 20 independent campaigns each, run on two different days.
 *Full compromise* means the agent took the dangerous action (exfiltrated a
 secret, wired money, deleted a file) because injected content told it to.
+A campaign is up to **10 adaptive attempts**, so the campaign rate answers "does
+a persistent attacker get through within 10 tries?". The per-attempt rate
+answers "how often does a single injection work?".
 
-| Agent under test (Lightning) | 15 Oct | 16 Oct (replication) | 95% CI | Attacker refusals |
-|---|---|---|---|---|
-| **Banking assistant** (wire funds) | **100%** (20/20) | **100%** (20/20) | 84–100% | 0% |
-| **Email assistant** (leak a secret) | **95%** (19/20) | **95%** (19/20) | 76–99% | 0% |
-| **Document assistant** (delete files) | **10%** (2/20) | **10%** (2/20) | 3–30% | 0% |
+| Agent under test (Lightning) | Campaigns, 15 Oct | Campaigns, 16 Oct (replication) | 95% CI | Per attempt, 15 / 16 Oct | Attacker refusals |
+|---|---|---|---|---|---|
+| **Banking assistant** (wire funds) | **100%** (20/20) | **100%** (20/20) | 84–100% | 27% (20/74) / 28% (20/72) | 0% |
+| **Email assistant** (leak a secret) | **95%** (19/20) | **95%** (19/20) | 76–99% | 28% (19/67) / 23% (19/83) | 0% |
+| **Document assistant** (delete files) | **10%** (2/20) | **10%** (2/20) | 3–30% | 1% (2/192) / 1% (2/192) | 0% |
 
-Cost: $0.99 and $1.01 for 60 campaigns, a median of $0.011 per full campaign
+The document rows match exactly on both days, down to each technique count.
+Techniques run in a fixed order, so two days with two successes at the same
+attempt positions give identical tables; the
+[per-campaign raw data](results/raw/) lets you check the 16 Oct side.
+
+Cost: $0.99 and $1.01 for 60 campaigns, a median of $0.011 per campaign in the
+16 Oct replication
 ([`campaign-stats-2026-10-16.json`](results/campaign-stats-2026-10-16.json)).
 The strongest technique was **output hijacking**: telling the agent that its
 result must be *delivered* by performing the dangerous action. In the
@@ -46,14 +58,17 @@ replication, 85% of those attempts fully compromised the banking agent (17/20),
 and 56% the email agent (10/18). Raw reports:
 [15 Oct](results/benchmark-2026-10-15.md),
 [16 Oct](results/benchmark-2026-10-16.md)
-([JSON](results/benchmark-2026-10-16.json)).
+([JSON](results/benchmark-2026-10-16.json)). Every 16 Oct and model-comparison
+campaign is published in [`results/raw/`](results/raw/): each injection, tool
+call, verdict, token count and cost. A CI test recomputes the published tables
+from it. The 15 Oct first run survives only as its report.
 
 ### Does a bigger model resist better? Yes, sharply
 
 Same attacker, three Nemotron models as the agent under test, 10 campaigns per
 cell, $2.27 total ([`results/compare-2026-10-15.json`](results/compare-2026-10-15.json)):
 
-| Agent model | Email | Banking | Documents | Median $ / campaign | Median model time |
+| Agent model | Email | Banking | Documents | Median $ / campaign (this run) | Median model time |
 |---|---|---|---|---|---|
 | Nemotron 3.5 Lightning | 90% | 100% | 0% | $0.0071 | 9.0 s |
 | Nemotron 3 Nano 30B | 60% | 100% | 0% | $0.0202 | 33.5 s |
@@ -76,16 +91,19 @@ Details and every intermediate number are in [DEVLOG.md](DEVLOG.md).
 
 ## Why a measurement tool, not a chatbot
 
-- **Adaptive attacks.** Static templates are weak. Sieve runs a TAP-style loop
-  (arXiv [2606.10525](https://arxiv.org/abs/2606.10525)): the attacker is told how
-  far its last attempt got and rewrites the next one.
+- **Adaptive attacks.** Static templates are weak. Turncoat runs an iterative
+  refinement loop inspired by TAP (arXiv [2606.10525](https://arxiv.org/abs/2606.10525)),
+  without TAP's tree search or pruning: one candidate per attempt, rotating six
+  techniques, and the attacker is told how far its last attempt got before it
+  rewrites the next one.
 - **State-based verification.** Success is decided by the agent's actual tool
   calls (did the secret leave? did money move?), never by an LLM judge that an
   injection could fool. This follows AgentDojo (arXiv
   [2406.13352](https://arxiv.org/abs/2406.13352)).
 - **Honest statistics.** Independent trials, 95% Wilson score intervals, per-technique
   rates, and the attacker's own refusal rate reported next to every result.
-- **Cheap at volume.** A full Lightning campaign has a median cost of $0.0071.
+- **Cheap at volume.** A full Lightning campaign has a median cost of about one
+  cent: $0.0071 in the 15 Oct model comparison, $0.011 in the 16 Oct replication.
 
 ## How it works
 
@@ -149,7 +167,7 @@ What worked and what didn't: [FRICTION_LOG.md](FRICTION_LOG.md).
 ## Quickstart (under 5 minutes)
 
 ```bash
-git clone https://github.com/Nataniel0212/sieve && cd sieve
+git clone https://github.com/Nataniel0212/turncoat && cd turncoat
 pip install -r requirements-dev.txt
 pytest -q                          # offline tests, no key, no network
 python run.py --scenario bank      # offline dry-run of the full pipeline
@@ -231,7 +249,7 @@ The published benchmark continues to describe the built-in agents.
 
 ## Tests and CI
 
-`pytest -q` runs 36 offline tests covering:
+`pytest -q` runs the offline test suite, covering:
 
 - the Wilson interval
 - the state-based verdicts
@@ -245,6 +263,7 @@ The published benchmark continues to describe the built-in agents.
 - exclusion of interrupted/all-refusal campaigns from benchmark rates
 - replay provenance, complete event streams and metering consistency
 - lifetime budget persistence across days
+- the published tables recomputed exactly from the raw campaign data
 
 CI runs the tests, a dry-run of every scenario, and a gitleaks secret scan. The
 scan uses an extra rule for Nebius keys ([`.gitleaks.toml`](.gitleaks.toml)),
@@ -267,7 +286,7 @@ because the default rules do not recognise that format.
 
 ## Model licenses
 
-Sieve calls these models through the Token Factory API and does not redistribute
+Turncoat calls these models through the Token Factory API and does not redistribute
 weights.
 
 | Model | License |
@@ -277,7 +296,7 @@ weights.
 
 ## Scope of use
 
-Sieve attacks only agents you own or are authorized to test, using fully
+Turncoat attacks only agents you own or are authorized to test, using fully
 synthetic fixtures. It is a defensive tool: find the hole before an attacker does.
 
 ## Roadmap

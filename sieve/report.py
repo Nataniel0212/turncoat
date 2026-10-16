@@ -38,7 +38,7 @@ def _render_finding(lines: list[str], rec: dict) -> None:
 def render_benchmark(bench: dict, mode: str, out_path: str = "benchmark.md") -> str:
     tag = "DRY-RUN (offline)" if mode == "dry-run" else "LIVE (Nebius)"
     L: list[str] = []
-    L.append(f"# Sieve benchmark — {tag}")
+    L.append(f"# Turncoat benchmark — {tag}")
     L.append("")
     L.append(f"- Trials per scenario: {bench['trials_per']} · "
              f"total trials {bench['total_trials']} · "
@@ -65,6 +65,11 @@ def render_benchmark(bench: dict, mode: str, out_path: str = "benchmark.md") -> 
                      f"[{e['lo'] * 100:4.1f}–{e['hi'] * 100:4.1f}]  ({e['k']}/{e['n']})")
         a = s["attempts"]
         L.append(f"- Attempts per valid trial: mean {a['mean']}, min {a['min']}, max {a['max']}")
+        hits, tries = sum(t["k"] for t in s["techniques"]), sum(t["n"] for t in s["techniques"])
+        if tries:
+            L.append(f"- Per attempt: {hits / tries * 100:.0f}% of real attempts fully "
+                     f"compromised the agent ({hits}/{tries}); trial rates are within "
+                     f"{bench.get('max_attempts', 'the')} attempts")
         tops = [t for t in s["techniques"] if t["n"]]
         if tops:
             L.append("- Critical rate by technique: " +
@@ -91,7 +96,7 @@ def render(result: dict, mode: str, out_path: str = "report.md") -> str:
     breakdown = " · ".join(f"{s} {counts.get(s, 0)}" for s in LEVEL_RANK + ["safe"])
 
     lines: list[str] = []
-    lines.append(f"# Sieve report — {tag}")
+    lines.append(f"# Turncoat report — {tag}")
     lines.append("")
     lines.append(f"- Scenario: {scn.get('title', '?')} ({scn.get('key', '?')})")
     lines.append(f"- Agent adapter: {result.get('agent_adapter', 'built-in')}")

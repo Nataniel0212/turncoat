@@ -1,11 +1,11 @@
-# Feedback: Sieve (Nebius x NVIDIA Global AI Hackathon)
+# Feedback: Turncoat (Nebius x NVIDIA Global AI Hackathon)
 
 **TL;DR: top 3 asks**
 1. **Per-key spend caps and low-balance alerts on Token Factory.** Every public demo has to rebuild a budget guard because HTTP 402 is the only stop.
 2. **Document how reasoning tokens are counted, and add a real thinking budget.** It is unclear whether `reasoning_tokens` sits inside `completion_tokens`, and Lightning with thinking on can spend the whole `max_tokens` on reasoning.
 3. **Make Nemotron 3 Ultra's safety behaviour consistent across the reasoning toggle, and document it.** On the same sanctioned evaluation task, it refused 25–54% of attempts with thinking on (60 campaigns, even with reframed retries) and 0% with thinking off.
 
-**Context.** Solo builder in Sweden (EU). Sieve is an automated prompt-injection benchmark for tool-using agents, started Oct 14, 2026. Environment: Windows 11, Python 3.12, the stock `openai` Python SDK. Measured usage in the final model comparison alone: 2,193 calls, 2.0M input and 0.31M output tokens, $2.27. In total, about 330 benchmark campaigns cost about $7.9. Some observations below come from an earlier structured-output prototype I built and dropped during the same hackathon. They are marked *(earlier prototype)*.
+**Context.** Solo builder in Sweden (EU). Turncoat is an automated prompt-injection benchmark for tool-using agents, started Oct 14, 2026. Environment: Windows 11, Python 3.12, the stock `openai` Python SDK. Measured usage in the final model comparison alone: 2,193 calls, 2.0M input and 0.31M output tokens, $2.27. In total, about 330 benchmark campaigns cost about $7.9. Some observations below come from an earlier structured-output prototype I built and dropped during the same hackathon. They are marked *(earlier prototype)*.
 
 ---
 
@@ -36,7 +36,7 @@
 ### TF-2 · Reasoning-token accounting is undocumented
 - **Severity:** minor (cost correctness) · **Frequency:** every reasoning call
 - **Observed:** one run reported 6,803 completion tokens, 2,773 of them reasoning. *(Earlier prototype:)* `reasoning_tokens=16384` equalled `max_tokens=16384`. Both suggest reasoning is counted inside `completion_tokens` and against `max_tokens`, but I found no docs that say so.
-- **Impact:** cost meters either double-count or under-count. Sieve computes cost from `completion_tokens` only, which is correct only if reasoning is included.
+- **Impact:** cost meters either double-count or under-count. Turncoat computes cost from `completion_tokens` only, which is correct only if reasoning is included.
 - **Suggested fix:** one sentence plus a usage example in the API reference: "`reasoning_tokens` is a subset of `completion_tokens`, billed at the output rate."
 
 ### TF-3 · Unfinished reasoning can end up in `content` *(earlier prototype)*
