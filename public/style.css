@@ -220,6 +220,9 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .cell.hot{background:var(--heat-bg)} .cell.hot .p{color:var(--heat)}
 .cell.cool{background:var(--ok-bg)} .cell.cool .p{color:var(--ok)}
 .techs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.defense-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.defense-value{font-family:var(--mono);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent)}
+.defense-card .note{min-height:34px}
 .trow{display:grid;grid-template-columns:130px 1fr 92px;gap:10px;align-items:center;font-size:13px;margin-top:8px}
 .trow .nm{font-family:var(--mono);font-size:12px}
 .trow .bar{height:10px;background:var(--surface-2);border-radius:3px;position:relative}

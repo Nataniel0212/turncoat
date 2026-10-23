@@ -108,6 +108,33 @@ def overlap_note(comp: dict) -> str:
         if pairs else ""
 
 
+def defense_section() -> str:
+    """Render the audited AgentDojo matched-set result into the public page."""
+    text = (RES / "defense-2026-10-16" / "summary.md").read_text(encoding="utf-8")
+    row = re.search(
+        r"\| dojo_static / also clean-success in all arms \| "
+        r"([^|]+)\|\s*([^|]+)\|\s*([^|]+)\|",
+        text,
+    )
+    if not row:
+        raise ValueError("Could not find the audited AgentDojo matched-set row")
+    values = [part.strip() for part in row.groups()]
+    labels = ["Lightning", "Lightning + Ultra gate", "Ultra"]
+    cards = "".join(
+        f'<div class="card defense-card"><div class="cap">{label}</div>'
+        f'<div class="defense-value">{escape(value)}</div>'
+        f'<div class="note">attacker-goal success on the same 70 clean-success pairs</div></div>'
+        for label, value in zip(labels, values)
+    )
+    return (
+        '<div class="defense-grid">' + cards + '</div>'
+        '<p class="note">AgentDojo banking v1.2.2. The gate observed 0/70 successes, '
+        'but zero observed successes is not a security guarantee; incomplete runs and '
+        '<a href="https://github.com/Nataniel0212/turncoat/tree/main/results/defense-2026-10-16">'
+        'the full audit data</a> are disclosed.</p>'
+    )
+
+
 def ci_row(label: str, e: dict, note: str) -> str:
     if not e["n"]:  # no valid trials is missing data, never a 0% rate
         return (
@@ -201,7 +228,8 @@ def render() -> tuple[str, dict]:
     tech += (f'</div><p class="note">{day(day2["generated"])} replication. Technique order is fixed: '
              'these rates also reflect attempt position and prior feedback, not isolated causal effects.</p>')
     html = PAGE.read_text(encoding="utf-8")
-    for name, body in {"hero": hero, "facts": facts, "bench": bench, "compare": compare, "tech": tech}.items():
+    for name, body in {"hero": hero, "facts": facts, "bench": bench, "compare": compare,
+                       "tech": tech, "defense": defense_section()}.items():
         pattern = rf"(<!-- build:{name} -->).*?(<!-- /build:{name} -->)"
         html, count = re.subn(pattern, lambda m: m[1] + "\n" + body + "\n" + m[2], html, flags=re.S)
         if count != 1:
@@ -227,7 +255,10 @@ def main() -> None:
                 raise SystemExit(f"Stale generated asset: {path.relative_to(ROOT)}; run scripts/build_page.py")
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8", newline="\n")
+            # Path.write_text(newline=...) only exists on newer Python versions;
+            # use open() so the offline builder also works on Python 3.9.
+            with path.open("w", encoding="utf-8", newline="\n") as handle:
+                handle.write(content)
     print("Page and offline catalog are up to date." if args.check else "Built page and offline catalog.")
 
 

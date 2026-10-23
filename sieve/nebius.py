@@ -66,7 +66,11 @@ class LiveClient:
 
     def __init__(self, cfg, max_retries: int = 3, backoff_s: float = 1.0) -> None:
         from openai import OpenAI  # imported lazily so dry-run needs no dep
-        self._client = OpenAI(base_url=cfg.base_url, api_key=cfg.api_key)
+        # Keep an abandoned browser request from holding a serverless worker and
+        # real API credit forever. Retries remain ours so metering sees each call.
+        self._client = OpenAI(base_url=cfg.base_url, api_key=cfg.api_key,
+                              timeout=getattr(cfg, "request_timeout_s", 60.0),
+                              max_retries=0)
         self._max_retries = max_retries
         self._backoff_s = backoff_s
         self._fallback = getattr(cfg, "model_fallback", "") or ""

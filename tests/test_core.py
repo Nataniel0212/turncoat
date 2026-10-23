@@ -119,3 +119,14 @@ def test_dotenv_strips_inline_comments(tmp_path, monkeypatch):
     assert os.environ["A_X"] == "1"
     assert os.environ["B_X"] == "q # kept"
     assert os.environ["C_X"] == ""
+
+
+def test_config_uses_safe_timeout_and_ignores_bad_numeric_env(monkeypatch):
+    monkeypatch.setenv("NEBIUS_TIMEOUT_S", "not-a-number")
+    monkeypatch.setenv("MAX_ATTEMPTS", "also-not-a-number")
+    cfg = Config.from_env(live=True)
+    assert cfg.request_timeout_s == 60.0
+    assert cfg.max_attempts == 10
+
+    monkeypatch.setenv("NEBIUS_TIMEOUT_S", "0.01")
+    assert Config.from_env(live=True).request_timeout_s == 1.0

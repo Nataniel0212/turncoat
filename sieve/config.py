@@ -36,6 +36,20 @@ def load_dotenv(path: str = ".env") -> None:
         os.environ.setdefault(key, value)
 
 
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
 @dataclass
 class Config:
     api_key: str
@@ -48,6 +62,7 @@ class Config:
     # Optional resilience fallback (e.g. Ultra -> Lightning) for the hosted demo.
     # Off by default so benchmark numbers are always on the named model.
     model_fallback: str = ""
+    request_timeout_s: float = 60.0
 
     @classmethod
     def from_env(cls, live: bool, max_attempts: int | None = None,
@@ -62,11 +77,12 @@ class Config:
             model_target=os.environ.get("MODEL_TARGET",
                                          "nvidia/Nemotron-3_5-Lightning"),
             max_attempts=max_attempts if max_attempts is not None
-            else int(os.environ.get("MAX_ATTEMPTS", "10")),
+            else _env_int("MAX_ATTEMPTS", 10),
             budget_usd=budget_usd if budget_usd is not None
-            else float(os.environ.get("BUDGET_USD", "3.00")),
+            else _env_float("BUDGET_USD", 3.00),
             live=live,
             model_fallback=os.environ.get("MODEL_FALLBACK", ""),
+            request_timeout_s=max(1.0, _env_float("NEBIUS_TIMEOUT_S", 60.0)),
         )
 
     def require_live_ready(self) -> None:

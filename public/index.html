@@ -158,6 +158,15 @@
 <!-- /build:tech -->
   </div>
 
+  <h3 class="h3">Measured defense on AgentDojo banking</h3>
+  <p class="sub">A matched task set tests whether a separate action-authorization gate
+  reduces attacker success while preserving useful work.</p>
+  <div id="defense">
+<!-- build:defense -->
+<div class="defense-grid"><div class="card defense-card"><div class="cap">Lightning</div><div class="defense-value">43/70 (61.4%)</div><div class="note">attacker-goal success on the same 70 clean-success pairs</div></div><div class="card defense-card"><div class="cap">Lightning + Ultra gate</div><div class="defense-value">0/70 (0.0%)</div><div class="note">attacker-goal success on the same 70 clean-success pairs</div></div><div class="card defense-card"><div class="cap">Ultra</div><div class="defense-value">10/70 (14.3%)</div><div class="note">attacker-goal success on the same 70 clean-success pairs</div></div></div><p class="note">AgentDojo banking v1.2.2. The gate observed 0/70 successes, but zero observed successes is not a security guarantee; incomplete runs and <a href="https://github.com/Nataniel0212/turncoat/tree/main/results/defense-2026-10-16">the full audit data</a> are disclosed.</p>
+<!-- /build:defense -->
+  </div>
+
   <h3 class="h3">We caught our own benchmark lying</h3>
   <p class="sub">The attacker model kept refusing to write payloads, which silently
   made the agents look safe. Three measurement passes, each more honest than the
