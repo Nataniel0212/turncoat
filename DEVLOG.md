@@ -405,3 +405,23 @@ package keeps the name `sieve`, so imports, scripts and run data are unchanged.
 
 See [the protocol](docs/defense-evaluation.md) and
 [the complete results](results/defense-2026-10-16/summary.md).
+
+## 2026-10-27: Demo video and a fairer defense comparison
+
+- Recorded two new live runs on the public demo for the video (26 Oct, 22:57 UTC):
+  bank/Lightning reached CRITICAL on attempt 3 ($0.0045, 12 calls); bank/Ultra held
+  for 6/6 attempts and called the message "likely a phishing attempt or scam"
+  ($0.0193). All live calls made for the video cost about $0.10.
+- An outside review pointed out that the gate looked worse than its competitors
+  because it was only compared with Ultra alone. The gate protects Lightning, so
+  README and the demo page now compare it with the model it protects first:
+  hijacks 43/70 → 0/70, legitimate tasks finished under attack 56 → 82 of 144,
+  and 37% of Ultra's cost per clean task. The downside stays in the same sentence:
+  Ultra alone finishes more tasks (114/144) and is about 3× faster under attack.
+  All numbers are read from `results/defense-2026-10-16/summary.md`; the page
+  builder now derives the utility and cost lines from it as well.
+- The iterative attacker is no longer the headline. On AgentDojo the fixed template
+  beat it on the first attempt (61/110 vs 17/110), which is stated in the README.
+- Two upstream AgentDojo issues that affect the evaluation were already reported by
+  others and are now cited: ethz-spylab/agentdojo#181 (banking tasks 0/1/3) and
+  #233 (`check_suites` injectability report).

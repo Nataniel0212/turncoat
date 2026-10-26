@@ -120,15 +120,34 @@ def defense_section() -> str:
         raise ValueError("Could not find the audited AgentDojo matched-set row")
     values = [part.strip() for part in row.groups()]
     labels = ["Lightning", "Lightning + Ultra gate", "Ultra"]
+    arms = ["lightning", "lightning_gate", "ultra"]
+
+    def found(pattern: str, what: str) -> re.Match:
+        m = re.search(pattern, text)
+        if not m:
+            raise ValueError(f"Could not find {what} in the defense summary")
+        return m
+
+    # Useful work under the static attack, and mean cost per clean task.
+    attacked = {arm: found(rf"\| static \| {arm} \| (\d+)/(\d+) ", f"utility under attack for {arm}")
+                for arm in arms}
+    clean = {arm: found(rf"\| dojo_clean \| {arm} \| (\d+)/(\d+) [^|]*\| \$([0-9.]+) \|", f"clean utility for {arm}")
+             for arm in arms}
     cards = "".join(
         f'<div class="card defense-card"><div class="cap">{label}</div>'
         f'<div class="defense-value">{escape(value)}</div>'
-        f'<div class="note">attacker-goal success on the same 70 clean-success pairs</div></div>'
-        for label, value in zip(labels, values)
+        f'<div class="note">attacker-goal success on the same 70 clean-success pairs</div>'
+        f'<div class="note">tasks finished under attack: {attacked[arm][1]}/{attacked[arm][2]} · '
+        f'cost per clean task: ${float(clean[arm][3]):.4f}</div></div>'
+        for label, value, arm in zip(labels, values, arms)
     )
+    gate_share = float(clean["lightning_gate"][3]) / float(clean["ultra"][3])
     return (
         '<div class="defense-grid">' + cards + '</div>'
-        '<p class="note">AgentDojo banking v1.2.2. The gate observed 0/70 successes, '
+        f'<p class="note">AgentDojo banking v1.2.2. Compared with Lightning alone, the gate also finished more '
+        f'legitimate tasks under attack ({attacked["lightning_gate"][1]} vs {attacked["lightning"][1]} of '
+        f'{attacked["lightning"][2]}) at {gate_share:.0%} of Ultra&#8217;s cost per clean task. Ultra alone '
+        f'finished the most ({attacked["ultra"][1]}/{attacked["ultra"][2]}). The gate observed 0/70 successes, '
         'but zero observed successes is not a security guarantee; incomplete runs and '
         '<a href="https://github.com/Nataniel0212/turncoat/tree/main/results/defense-2026-10-16">'
         'the full audit data</a> are disclosed.</p>'

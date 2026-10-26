@@ -5,9 +5,16 @@
 
 **Will your AI agent turn on you?** Turncoat is an automated prompt-injection
 red team and **benchmark** for tool-using LLM agents. It attacks an agent you
-control with an adaptive attacker model, checks every outcome against the agent's
-real tool calls, and reports an **attack-success rate with 95% confidence
-intervals**, so you can measure how exposed an agent is *before* you ship it.
+control, checks every outcome against the agent's real tool calls, and reports an
+**attack-success rate with 95% confidence intervals**, so you can measure how
+exposed an agent is, and whether a defense actually helps, *before* you ship it.
+
+> **Headline, on a public benchmark (AgentDojo banking v1.2.2, 70 matched cases):**
+> the cheap agent (Nemotron 3.5 Lightning) was hijacked in **43/70**. Adding an
+> Ultra gate that approves each sensitive tool call: **0/70**, while finishing
+> *more* tasks under attack (**82 vs 56 of 144**) and costing **37% of Ultra** per
+> task in normal use. The catch: Ultra alone (10/70 hijacked) still finishes the
+> most tasks (114/144) and is about 3× faster under attack.
 
 Everything runs on **NVIDIA Nemotron via Nebius Token Factory**: the attacker is
 **Nemotron 3 Ultra**; the agent under test is **Nemotron 3.5 Lightning** by default,
@@ -89,17 +96,38 @@ attack experiment. Outcomes are checked from environment state.
 
 On the **70 task/goal pairs** with successful clean tasks and valid attack
 outcomes for all three agents, full attacker-goal success was **43/70** for
-Lightning, **0/70** with the gate and **10/70** for Ultra. The gate completed
-120 of 144 attacked runs; the others are disclosed as incomplete. Zero observed
-successes is a bounded experiment result, not a security guarantee. Under
-attack the gate was slightly more expensive than Ultra alone and completed
-fewer legitimate tasks. On clean tasks it cost less, with lower utility than Ultra.
+Lightning, **0/70** with the gate and **10/70** for Ultra.
 
-The adaptive attacker **did not outperform the fixed template** in this run.
-Attack budgets and available prompt information differ and are documented.
+| AgentDojo banking (static attack) | Hijacked, 70 matched pairs | Tasks finished under attack | Clean tasks finished | Cost per clean task |
+|---|---|---|---|---|
+| Lightning alone | 43/70 (61%) | 56/144 | 10/16 | $0.0008 |
+| **Lightning + Ultra gate** | **0/70** | **82/144** | 11/16 | $0.0029 (37% of Ultra) |
+| Ultra alone | 10/70 (14%) | 114/144 | 14/16 | $0.0080 |
+
+Compared with the model it protects, the gate removed every observed hijack and
+*raised* the share of legitimate tasks finished under attack (39% → 57%), at
+about a third of the per-task cost of switching to Ultra in normal use. The
+trade-off: under attack the gate costs about the same as Ultra alone per attempt
+($0.0092 vs $0.0088), takes 9.9 s vs 3.0 s of model time, and finishes fewer tasks.
+The gate completed 120 of 144 attacked runs; the others are disclosed as
+incomplete. Zero observed successes is a bounded experiment result, not a
+security guarantee.
+
+**On the attacker:** on AgentDojo the fixed attack template was stronger than
+Turncoat's iterative attacker (first attempt 61/110 vs 17/110). We report that
+instead of hiding it: Turncoat's value is the harness, the state-based checks
+and the statistics, which work with either attack. Attack budgets and available
+prompt information differ and are documented.
+
 Original AgentDojo scores and supplementary checks for evaluator edge cases are
-both retained. See the [protocol and reproduction commands](docs/defense-evaluation.md)
-and the [audited raw data](results/defense-2026-10-16).
+both retained. Two upstream issues we ran into were already reported by others
+in AgentDojo's issue tracker:
+[ethz-spylab/agentdojo#181](https://github.com/ethz-spylab/agentdojo/issues/181)
+(banking injection tasks 0/1/3 never check the transaction subject) and
+[#233](https://github.com/ethz-spylab/agentdojo/issues/233) (`check_suites`
+reports every task as not injectable). See the
+[protocol and reproduction commands](docs/defense-evaluation.md) and the
+[audited raw data](results/defense-2026-10-16).
 
 ### We caught our own benchmark lying
 
@@ -113,11 +141,14 @@ Details and every intermediate number are in [DEVLOG.md](DEVLOG.md).
 
 ## Why a measurement tool, not a chatbot
 
-- **Adaptive attacks with a fixed-template baseline.** Turncoat runs an iterative
-  refinement loop inspired by TAP (arXiv [2606.10525](https://arxiv.org/abs/2606.10525)),
+- **Measure a defense, not just an attack.** The same harness runs an agent
+  with and without a defense on matched cases and reports hijacks, finished tasks,
+  cost and latency side by side, so a fix is judged on data.
+- **Iterative attacks, measured against a fixed baseline.** Turncoat's attacker
+  runs a refinement loop inspired by TAP (arXiv [2606.10525](https://arxiv.org/abs/2606.10525)),
   without TAP's tree search or pruning: one candidate per attempt, rotating six
-  techniques, and the attacker is told how far its last attempt got before it
-  rewrites the next one.
+  techniques, told how far its last attempt got. On AgentDojo a fixed template
+  beat it on the first attempt, and that result is published.
 - **State-based verification.** Success is decided by the agent's actual tool
   calls (did the secret leave? did money move?), never by an LLM judge that an
   injection could fool. This follows AgentDojo (arXiv
